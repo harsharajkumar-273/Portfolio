@@ -8,7 +8,7 @@ export default function Publications() {
       type: 'IEEE Published Paper',
       date: '2025',
       badge: 'IEEE Published',
-      color: 'var(--secondary)', // solid green-teal matching primary variables
+      color: 'var(--primary)',
       desc: 'Developed an integrated deep learning framework combining Graph Convolutional Networks (GCN), Graph Attention Networks (GAT), and Autoencoders (AE) for robust and noise-resilient anomaly detection in Industrial IoT sensor networks.',
       link: 'https://ieeexplore.ieee.org/abstract/document/11399172'
     },
@@ -17,8 +17,8 @@ export default function Publications() {
       type: 'Hackathon Award',
       date: '2025',
       badge: 'Hackathon Finalist',
-      color: 'var(--accent-purple)', // solid violet matching primary variables
-      desc: 'Co-developed a high-impact crisis response command platform, winning finalist recognition for social impact and real-time systems execution among competitive university engineering cohorts.',
+      color: 'var(--accent-purple)',
+      desc: 'Co-developed a high-impact crisis response system, winning finalist recognition for social impact and real-time systems execution among competitive university engineering cohorts.',
       link: 'https://github.com/harsharajkumar-273/ARIA'
     }
   ];
@@ -60,9 +60,9 @@ export default function Publications() {
                 fontSize: '0.6rem',
                 padding: '0.2rem 0.5rem',
                 borderRadius: '10px',
-                background: `${item.color}10`,
+                background: `${item.color}15`,
                 color: item.color,
-                border: `1px solid ${item.color}20`,
+                border: `1px solid ${item.color}30`,
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 fontFamily: 'var(--font-mono)'
@@ -94,7 +94,7 @@ export default function Publications() {
                   fontWeight: 600,
                   fontFamily: 'var(--font-space)'
                 }}>
-                  View Project <ExternalLink size={12} />
+                  View Link <ExternalLink size={12} />
                 </a>
               )}
             </div>
