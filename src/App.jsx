@@ -58,42 +58,43 @@ export default function App() {
   const projects = [
     {
       id: 'lsmtree',
-      title: 'LSM-Tree Key-Value Engine',
-      label: 'High-Performance Systems',
-      desc: 'An advanced implementation of a Log-Structured Merge-Tree key-value store in C++ featuring asynchronous zero-copy logging via Linux io_uring and vectorized cache-aligned Bloom filters.',
+      title: 'LSM-Tree Storage Engine',
+      label: 'High-Performance Storage Systems',
+      desc: 'A production-grade C++20 Log-Structured Merge-Tree storage engine featuring io_uring O_DIRECT logging, Leveled Compaction, automated WAL crash recovery, and Block Bloom filters.',
       bullets: [
-        'Integrated Linux io_uring with O_DIRECT for non-blocking direct WAL logging, bypassing the kernel page cache.',
-        'Engineered concurrent lock-free SkipList MemTable backed by atomic CAS pointers and memory Arenas.',
-        'Implemented cache-aligned block Bloom filters restricting negative search latency overhead to 1 cache line miss.'
+        'Integrated Linux io_uring with O_DIRECT for non-blocking WAL logging and automated WAL crash recovery (<0.85ms replay time).',
+        'Engineered Leveled Compaction (L0 -> L1 tombstone purges) and concurrent lock-free SkipList MemTable with atomic CAS pointers.',
+        'Implemented 64-byte cache-aligned block Bloom filters restricting negative search latency overhead to 1 cache line miss.'
       ],
-      tags: ['C++20', 'io_uring', 'Bloom Filters', 'Lock-Free SkipList'],
+      tags: ['C++20', 'io_uring', 'Crash Recovery', 'Leveled Compaction', 'Block Bloom Filters'],
       links: [
         { label: 'Code', href: 'https://github.com/harsharajkumar-273/lsm_tree', primary: true }
       ],
       simulator: <LSMTreeSim />,
       categories: ['systems'],
       benchmarkDetails: {
-        tool: 'Custom C++ Benchmark Harness',
+        tool: 'Custom C++ Benchmark Harness & Crash Test Suite',
         command: './build/lsm_benchmark --threads=8 --duration=60 --ops=10000000',
-        methodology: 'Evaluated the in-memory write throughput and read-miss bypassing latency on high-density random operations.',
+        methodology: 'Evaluated in-memory write throughput, WAL crash recovery replay time, and read-miss bypassing latency.',
         bullets: [
-          'Direct I/O Logging: Direct WAL ingestion via Linux io_uring with O_DIRECT bypasses the kernel page cache, completing 128-byte write log commits in under 12 microseconds.',
-          'Memory Ingestion: Lock-free MemTable using concurrent atomic Compare-And-Swap (CAS) pointers sustains over 180,000 writes/sec in-memory.',
-          'Read Bypassing: Cache-aligned block Bloom filters filter out key misses, restricting negative search overhead to a single CPU cache line miss (verified with perf stat cache-misses).'
+          'Direct I/O Logging: Direct WAL ingestion via Linux io_uring with O_DIRECT bypasses kernel page cache locks, hitting 254,000+ ops/sec.',
+          'Crash Recovery SLA: Replays pending WAL transactions in < 0.85ms for 5,000 keys with CRC32 checksum corruption verification.',
+          'Leveled Compaction: Merges L0 SSTables into L1 SSTables via single-pass multiway merge sort, purging DELETE tombstones in background threads.',
+          'Read Bypassing: Cache-aligned block Bloom filters filter out key misses, restricting negative search overhead to a single CPU cache line miss (0.76μs latency).'
         ]
       }
     },
     {
       id: 'radar',
-      title: 'Repost-Radar Telemetry Filter',
+      title: 'Repost-Radar Content Deduplication Engine',
       label: 'High-Performance Systems',
-      desc: 'A C++20 real-time deduplication engine optimized for cleaning continuous telemetry streams. Minimizes database storage footprints by discarding redundant frames before model training.',
+      desc: 'A C++20 real-time deduplication engine using AVX2 SIMD MinHash vectorization and zero-copy string shingling, productized as a Reddit Devvit moderation app.',
       bullets: [
-        'Leveraged AVX2 SIMD hardware vectorization to parallelize signature generation.',
-        'Applied Locality-Sensitive Hashing (LSH) and MinHash functions for O(1) duplicates scanning.',
-        'Sustained over 240k requests per second under peak sensor stream ingestion.'
+        'Leveraged AVX2 SIMD hardware vectorization across 256-bit YMM registers for 4.2x MinHash speedup.',
+        'Applied zero-copy std::string_view shingling, eliminating 65% of dynamic heap allocations during stream processing.',
+        'Engineered concurrent LSH index sharded across 32 std::shared_mutex partitions (22,450+ tokenized streams/sec).'
       ],
-      tags: ['C++20', 'AVX2 SIMD', 'LSH MinHash'],
+      tags: ['C++20', 'AVX2 SIMD', 'LSH MinHash', 'Devvit App'],
       links: [
         { label: 'Code', href: 'https://github.com/harsharajkumar-273/Repost-Radar', primary: true }
       ],
@@ -107,34 +108,35 @@ export default function App() {
           'Zero-Copy Shingling: Tokenizes raw document streams and extracts overlapping 3-gram word shingles without triggering heap allocations.',
           'MinHash Signature Generation: Generates 128-dimensional signatures optimized using AVX2 SIMD hardware-level registers.',
           'LSH Bucket Mapping: Hashes signatures into 16 bands, mapping them to sharded memory buckets to detect collisions in O(1) constant time.',
-          'Measured Throughput: Processes 10,000 document streams across 4 threads in 28ms, yielding a sustained throughput of over 350,000 documents/sec in-memory with average latency of 15 microseconds per document.'
+          'Measured Throughput: Processes 10,000 document streams across 4 threads in 28ms, yielding a sustained throughput of over 22,450 streams/sec in-memory.'
         ]
       }
     },
     {
       id: 'pulsestream',
-      title: 'PulseStream Metrics Ingestion',
-      label: 'Distributed Cloud Systems',
-      desc: 'A horizontally scalable event-driven metrics ingestion pipeline built on Redpanda (Kafka), Redis idempotency edge locks, and PostgreSQL, benchmarked for high-concurrency IoT telemetry streams.',
+      title: 'PulseStream Distributed Telemetry Platform',
+      label: 'Distributed Cloud Infrastructure',
+      desc: 'A resilient, production-grade telemetry platform built on Redpanda (Kafka), Redis idempotency edge locks, PostgreSQL, Prometheus metrics, and KEDA consumer lag auto-scaling.',
       bullets: [
-        'Decoupled ingestion gate returning HTTP 202 Accepted, routing streams using device ID partition keys.',
-        'Dual-layer idempotency: edge Redis lock-checks matching keys followed by PostgreSQL atomic upserts.',
-        'Containerized metrics collection scraping via Prometheus and visualizing loads on Grafana.'
+        'Decoupled ingestion gate returning HTTP 202 Accepted (< 8ms SLA), producing to Redpanda (Kafka) topic partitions.',
+        'Implemented Dead-Letter Queue (DLQ) routing, exponential backoff retries, and dual-layer idempotency (Redis SETNX + Postgres ON CONFLICT).',
+        'Configured Prometheus consumer lag monitoring and KEDA Kubernetes auto-scaling (scaling consumer pods 1 -> 10 based on partition lag).'
       ],
-      tags: ['TypeScript', 'Redpanda/Kafka', 'Redis Cache', 'Prometheus'],
+      tags: ['TypeScript', 'Redpanda/Kafka', 'KEDA Auto-scaling', 'Prometheus', 'Redis', 'PostgreSQL'],
       links: [
         { label: 'Code', href: 'https://github.com/harsharajkumar-273/PulseStream', primary: true }
       ],
       simulator: <PulseStreamSim />,
       categories: ['systems', 'web'],
       benchmarkDetails: {
-        tool: 'Locust HTTP Ingestion Suite & Redis LSH Analysis',
-        command: 'locust -f tests/locustfile.py --headless -u 1000 -r 100 --host http://localhost:8000',
-        methodology: 'Evaluated LSH band mapping query latency and sliding-window Redis cache retention under load.',
+        tool: 'Locust Ingestion Harness & Prometheus Consumer Lag Suite',
+        command: 'locust -f tests/locustfile.py --headless -u 1000 -r 100 --host http://localhost:3000',
+        methodology: 'Evaluated ingestion throughput, consumer lag draining speed, and fault recovery under simulated DB outages.',
         bullets: [
-          'Lookup Complexity: Instead of querying all posts (O(N) scans), Locality-Sensitive Hashing (LSH) reduces query time to O(1) constant-time hash bucket key lookups on Redis.',
-          'Concurrency Primitives: Leveraged Promise.all to query all 16 LSH bands in parallel on Redis, keeping response times under 2ms.',
-          'Memory Pruning: Configured sliding-window TTL (Time-To-Live) on Redis sorted sets, bounding index growth and keeping query latencies under 15ms even on subreddits with millions of posts.'
+          'Ingestion Speed: Asynchronous Fastify gateway acknowledges payloads in < 8ms (P99 12.4ms), sustaining 50,000+ metrics/sec.',
+          'Fault Isolation: Malformed or unprocessable metrics route to Dead-Letter Queue (telemetry-dlq), while DB timeouts execute exponential backoff with jitter.',
+          'KEDA Auto-scaling: Kubernetes ScaledObject monitors Prometheus consumer lag metrics, scaling worker pods from 1 to 10 replicas when lag exceeds 100 messages.',
+          'Batch Persistence: Consumer workers aggregate partition streams into 1,000-record transactions, writing bulk upserts to PostgreSQL in 14.5ms.'
         ]
       }
     },
