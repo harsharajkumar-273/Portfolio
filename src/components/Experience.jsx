@@ -28,7 +28,7 @@ export default function Experience() {
     {
       title: 'Systems & Software Engineer Research Assistant',
       company: 'VU-BEAM Lab, Vanderbilt University',
-      date: 'Oct 2025 – May 2026',
+      date: 'Oct 2025 – Aug 2026',
       location: 'Nashville, TN',
       details: [
         'Built multi-GPU PyTorch data loader pipelines to preprocess, augment, and cache 10,000+ raw high-resolution scan frames for ReCL ultrasound research, reducing training latency by 40%.',
