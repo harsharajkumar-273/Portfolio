@@ -4,26 +4,36 @@ import { Briefcase, Calendar, MapPin } from 'lucide-react';
 export default function Experience() {
   const roles = [
     {
-      title: 'Systems & Backend Research Assistant',
-      company: 'VU Math Department',
-      date: 'Sep 2025 – Present',
+      title: 'Software Engineer — GenAI Platform & Systems',
+      company: 'Amplify GenAI Innovation (AGI) Center, Vanderbilt University',
+      date: 'Sep 2026 – Present',
       location: 'Nashville, TN',
       details: [
-        'Architected a browser-based Cloud IDE using the Monaco code editor with custom auto-completion utilities.',
-        'Developed a PreTeXt/XML to static HTML compilation pipeline running inside microservice Docker containers.',
-        'Decreased textbook deployment build failures by 60% and optimized CI/CD cycles by 75% using GitHub Actions.',
-        'Implemented collaborative concurrent editing features using CRDTs (Y.js) and a custom WebSocket sync server.'
+        'Engineered scalable GenAI platform tooling, API integrations, and multi-agent workflows across Vanderbilt\'s College of Connected Computing.',
+        'Built high-throughput LLM middleware services and vector indexing pipelines to accelerate AI application deployment for university research initiatives.',
+        'Collaborated with operations and research leads to design high-concurrency cloud microservices for GenAI applications.'
       ]
     },
     {
-      title: 'Software Engineer RA',
-      company: 'VU-BEAM Lab',
+      title: 'Platform Architect & Software Engineer',
+      company: 'VU Math Department, Vanderbilt University',
+      date: 'Jan 2024 – May 2024',
+      location: 'Nashville, TN',
+      details: [
+        'Engineered Proofdesk, a collaborative browser-based LaTeX Web IDE, reducing textbook compilation latency by 72% (from 1.1s to 300ms) via client-side WebAssembly (Pyodide).',
+        'Deployed WebSocket sandboxed terminal runtimes (node-pty) inside resource-restricted Docker containers (512MB RAM limit) on AWS EC2.',
+        'Architected a distributed background worker task queue using Redis and BullMQ with local fallback loops to guarantee 100% compiler availability during outages.'
+      ]
+    },
+    {
+      title: 'Systems & Software Engineer Research Assistant',
+      company: 'VU-BEAM Lab, Vanderbilt University',
       date: 'Oct 2025 – Present',
       location: 'Nashville, TN',
       details: [
-        'Designed high-throughput data pipelines on multi-GPU nodes to handle real-time medical sensor streams.',
-        'Optimized core numerical compute blocks in PyTorch, reducing execution latency by 40% across training nodes.',
-        'Engineered distributed database ingestion scripts to process clinical benchmark datasets in parallel.'
+        'Built multi-GPU PyTorch data loader pipelines to preprocess, augment, and cache 10,000+ raw high-resolution scan frames for ReCL ultrasound research, reducing training latency by 40%.',
+        'Instrumented multi-GPU training nodes with Prometheus to track memory, utilization, and thermal metrics, identifying memory leaks and throttling bottlenecks during long-running workloads.',
+        'Optimized core numerical compute pipelines in PyTorch, accelerating batch execution across clinical ultrasound datasets.'
       ]
     }
   ];
