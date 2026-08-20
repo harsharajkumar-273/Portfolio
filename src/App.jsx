@@ -85,30 +85,28 @@ export default function App() {
       }
     },
     {
-      id: 'radar',
-      title: 'Repost-Radar Content Deduplication Engine',
-      label: 'High-Performance Systems',
-      desc: 'A C++20 real-time deduplication engine using AVX2 SIMD MinHash vectorization and zero-copy string shingling, productized as a Reddit Devvit moderation app.',
+      id: 'revertai',
+      title: 'revert-ai Automated Code Reviewer',
+      label: 'Developer Tooling & AI Automation',
+      desc: 'An automated developer tool published on NPM that integrates with GitHub Webhooks to intercept pull requests, run AST static code analysis, and post inline AI code reviews.',
       bullets: [
-        'Leveraged AVX2 SIMD hardware vectorization across 256-bit YMM registers for 4.2x MinHash speedup.',
-        'Applied zero-copy std::string_view shingling, eliminating 65% of dynamic heap allocations during stream processing.',
-        'Engineered concurrent LSH index sharded across 32 std::shared_mutex partitions (22,450+ tokenized streams/sec).'
+        'Integrated GitHub Webhooks API to intercept pull requests and execute AST-based static code analysis.',
+        'Engineered an asynchronous LLM code review pipeline parsing git diff chunks to detect security flaws and syntax bugs.',
+        'Implemented local caching and token optimization algorithms to reduce LLM API latency by 60%.'
       ],
-      tags: ['C++20', 'AVX2 SIMD', 'LSH MinHash', 'Devvit App'],
+      tags: ['TypeScript', 'Node.js', 'GitHub Webhooks', 'AST Parsers', 'LLMs', 'NPM Package'],
       links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/Repost-Radar', primary: true }
+        { label: 'Code', href: 'https://github.com/harsharajkumar-273/revert-ai', primary: true }
       ],
-      simulator: <RadarSim />,
-      categories: ['systems'],
+      categories: ['systems', 'web'],
       benchmarkDetails: {
-        tool: 'tests/bench.cpp multi-threaded runner',
-        command: 'g++ -O3 -mavx2 tests/bench.cpp -o bench && ./bench --docs=10000 --threads=4',
-        methodology: 'Determined in-memory streaming deduplication throughput of trajectories and text signatures.',
+        tool: 'GitHub Webhook Test Harness & AST Benchmarks',
+        command: 'npx revert-ai --analyze --pr=142',
+        methodology: 'Evaluated webhook response latency, AST parse speed, and LLM prompt token optimization.',
         bullets: [
-          'Zero-Copy Shingling: Tokenizes raw document streams and extracts overlapping 3-gram word shingles without triggering heap allocations.',
-          'MinHash Signature Generation: Generates 128-dimensional signatures optimized using AVX2 SIMD hardware-level registers.',
-          'LSH Bucket Mapping: Hashes signatures into 16 bands, mapping them to sharded memory buckets to detect collisions in O(1) constant time.',
-          'Measured Throughput: Processes 10,000 document streams across 4 threads in 28ms, yielding a sustained throughput of over 22,450 streams/sec in-memory.'
+          'Webhook Ingestion: Sub-second webhook acknowledgement with asynchronous background diff parsing.',
+          'AST Static Analysis: Parses syntax tree chunks to extract modified functions and variable scopes before LLM processing.',
+          'Token Optimization: Filters out whitespace-only diffs, reducing LLM API token consumption by 60%.'
         ]
       }
     },
