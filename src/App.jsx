@@ -86,22 +86,22 @@ export default function App() {
     },
     {
       id: 'revertai',
-      title: 'revert-ai Automated Code Reviewer',
+      title: 'revert-ai Automated Code Analyzer',
       label: 'Developer Tooling & AI Automation',
-      desc: 'An automated developer tool published on NPM that integrates with GitHub Webhooks to intercept pull requests, run AST static code analysis, and post inline AI code reviews.',
+      desc: 'An automated developer security and code quality analysis tool published on NPM that executes AST static code analysis and delivers inline AI code review feedback.',
       bullets: [
-        'Integrated GitHub Webhooks API to intercept pull requests and execute AST-based static code analysis.',
-        'Engineered an asynchronous LLM code review pipeline parsing git diff chunks to detect security flaws and syntax bugs.',
+        'Integrated automated Webhooks API to execute AST-based static code analysis on code submissions.',
+        'Engineered an asynchronous LLM code review pipeline parsing code diffs to detect security flaws and syntax bugs.',
         'Implemented local caching and token optimization algorithms to reduce LLM API latency by 60%.'
       ],
-      tags: ['TypeScript', 'Node.js', 'GitHub Webhooks', 'AST Parsers', 'LLMs', 'NPM Package'],
+      tags: ['TypeScript', 'Node.js', 'Webhooks API', 'AST Parsers', 'LLMs', 'NPM Package'],
       links: [
         { label: 'Code', href: 'https://github.com/harsharajkumar-273/revert-ai', primary: true }
       ],
       categories: ['systems', 'web'],
       benchmarkDetails: {
-        tool: 'GitHub Webhook Test Harness & AST Benchmarks',
-        command: 'npx revert-ai --analyze --pr=142',
+        tool: 'Webhook Test Harness & AST Benchmarks',
+        command: 'npx revert-ai --analyze --file=src/index.ts',
         methodology: 'Evaluated webhook response latency, AST parse speed, and LLM prompt token optimization.',
         bullets: [
           'Webhook Ingestion: Sub-second webhook acknowledgement with asynchronous background diff parsing.',
