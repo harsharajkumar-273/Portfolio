@@ -207,7 +207,7 @@ export default function Hero() {
                 onClick={() => setActiveStat(null)}
                 style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.75rem' }}
               >
-                close [✗]
+                close [✕]
               </button>
             </div>
             <div>
