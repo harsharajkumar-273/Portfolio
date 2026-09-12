@@ -6,10 +6,10 @@ export default function Hero() {
 
   const statDetails = [
     {
-      title: '72% Build Latency Reduction',
-      source: 'VU Math Department Cloud IDE Compiler',
-      desc: 'How it was measured: The previous textbook compilation pipeline compiled full PreTeXt/XML sources sequentially, taking ~5.2 minutes per chapter. By containerizing the build environment and implementing a differential build caching harness (using file hashes to recompile only modified XML nodes), chapter compilation times dropped to ~1.4 minutes (72% reduction).',
-      calculation: 'Formula: (5.2m - 1.4m) / 5.2m = 73% (conservatively listed as 72% in metrics).'
+      title: '88% Faster Textbook Compiles',
+      source: 'VU Math Department — Proofdesk Browser IDE',
+      desc: 'How it was measured: the previous pipeline compiled PreTeXt/LaTeX sources on the server on every change. By moving compilation into the browser with WebAssembly, server round-trips were eliminated and compile latency dropped by about 88% versus the old server-side path.',
+      calculation: 'Reported as ~88% faster in-browser compilation versus the server-side baseline.'
     },
     {
       title: '80% Ingestion Space Saved',
@@ -48,7 +48,7 @@ export default function Hero() {
           textTransform: 'uppercase',
           letterSpacing: '1px'
         }}>
-          Software Development Engineer
+          Software Engineer
         </div>
         
         {/* Pulsing Seeking Opportunities Badge - Styled like a CLI command status */}
@@ -65,7 +65,7 @@ export default function Hero() {
           color: 'var(--text-muted)'
         }}>
           <span style={{ color: 'var(--primary)' }}>$</span>
-          <span>ping sde-roles --active</span>
+          <span>ping new-grad-swe --active</span>
           <span style={{
             width: '8px',
             height: '8px',
@@ -98,9 +98,9 @@ export default function Hero() {
         lineHeight: 1.7,
         margin: '0 auto'
       }}>
-        MS Computer Science at <strong style={{ color: 'var(--text-main)' }}>Vanderbilt University</strong>. 
-        Specializing in low-level systems programming, high-performance backends, 
-        and resilient distributed cloud infrastructure.
+        MS Computer Science at <strong style={{ color: 'var(--text-main)' }}>Vanderbilt University</strong>.
+        I build backends and distributed systems — a Kafka-based telemetry pipeline, the backend for my
+        university's GenAI platform, and an open-source C++ storage engine I maintain — with a bug-fix merged into PyTorch.
       </p>
       
       <div style={{
@@ -154,7 +154,7 @@ export default function Hero() {
           }}
         >
           {[
-            { num: '72', suffix: '%', label: 'Build latency cut', color: 'var(--primary)' },
+            { num: '88', suffix: '%', label: 'Faster compiles', color: 'var(--primary)' },
             { num: '80', suffix: '%', label: 'Ingestion space saved', color: 'var(--accent-purple)' },
             { num: '40', suffix: '%', label: 'Pipeline speedup', color: 'var(--secondary)' }
           ].map((stat, idx) => {

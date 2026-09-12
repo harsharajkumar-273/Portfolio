@@ -6,17 +6,17 @@ export default function Skills() {
     {
       title: 'Languages',
       color: 'var(--primary)',
-      skills: ['C++20 (AVX2 SIMD)', 'Java', 'Python', 'Go', 'TypeScript / JavaScript']
+      skills: ['C++', 'Java', 'Python', 'Go', 'TypeScript / JavaScript', 'SQL']
     },
     {
-      title: 'Systems & Web',
+      title: 'Systems & Infrastructure',
       color: 'var(--accent-purple)',
-      skills: ['Node.js / Express', 'React / Vite', 'FastAPI', 'Redis In-Memory Cache', 'PostgreSQL / PostGIS SQL']
+      skills: ['Distributed systems', 'Kafka / Redpanda', 'PostgreSQL', 'Redis', 'RocksDB', 'io_uring', 'Docker', 'AWS (EC2/S3/ECS)', 'GitHub Actions CI/CD', 'Prometheus', 'KEDA']
     },
     {
-      title: 'Infrastructure & Tools',
+      title: 'Frameworks & AI',
       color: 'var(--secondary)',
-      skills: ['Redpanda / Kafka', 'Docker Containerization', 'AWS (EC2, S3)', 'GitHub Actions (CI/CD)', 'Prometheus & Grafana']
+      skills: ['REST APIs', 'FastAPI', 'Node.js / Express', 'React', 'PyTorch', 'LLM orchestration', 'RAG / vector search']
     }
   ];
 

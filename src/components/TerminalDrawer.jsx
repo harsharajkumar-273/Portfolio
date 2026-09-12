@@ -53,7 +53,7 @@ export default function TerminalDrawer() {
       case 'about':
         newHistory.push({
           type: 'output',
-          text: 'Harsha Raj Kumar | MS CS @ Vanderbilt University\nSpecializing in high-performance computing, C++20 systems engineering, and low-overhead distributed systems.'
+          text: 'Harsha Raj Kumar | MS CS @ Vanderbilt University\nI build backends and distributed systems, and maintain an open-source C++ storage engine. Bug-fix merged into PyTorch.'
         });
         break;
 
@@ -61,7 +61,7 @@ export default function TerminalDrawer() {
         if (subCmd === 'projects' || subCmd === 'project') {
           newHistory.push({
             type: 'output',
-            text: 'Flagship Projects:\n  1. lsm_tree      - Log-Structured Key-Value Engine (C++, io_uring WAL)\n  2. repost_radar  - SIMD AVX2 telemetry deduplicator stream filter\n  3. pulsestream   - Redpanda Kafka metrics ingestion pipeline\n  4. pathfinder    - Decay Dijkstra routing engine using PostGIS\n  5. api_gateway   - EWMA rate limiter & circuit breaker'
+            text: 'Flagship Projects:\n  1. engram        - Autonomous ReAct agent + cognitive memory engine (TypeScript)\n  2. pulsestream   - Redpanda/Kafka telemetry ingestion pipeline\n  3. lsm_tree      - Open-source C++ LSM storage engine (maintainer)\n  4. proofdesk     - Browser-based LaTeX IDE (WebAssembly, CRDTs)\n  5. api_gateway   - Rate limiter & circuit breaker gateway'
           });
         } else {
           newHistory.push({
@@ -74,14 +74,14 @@ export default function TerminalDrawer() {
       case 'projects':
         newHistory.push({
           type: 'output',
-          text: 'Flagship Projects:\n  1. lsm_tree      - Log-Structured Key-Value Engine (C++, io_uring WAL)\n  2. repost_radar  - SIMD AVX2 telemetry deduplicator stream filter\n  3. pulsestream   - Redpanda Kafka metrics ingestion pipeline\n  4. pathfinder    - Decay Dijkstra routing engine using PostGIS\n  5. api_gateway   - EWMA rate limiter & circuit breaker'
+          text: 'Flagship Projects:\n  1. engram        - Autonomous ReAct agent + cognitive memory engine (TypeScript)\n  2. pulsestream   - Redpanda/Kafka telemetry ingestion pipeline\n  3. lsm_tree      - Open-source C++ LSM storage engine (maintainer)\n  4. proofdesk     - Browser-based LaTeX IDE (WebAssembly, CRDTs)\n  5. api_gateway   - Rate limiter & circuit breaker gateway'
         });
         break;
 
       case 'skills':
         newHistory.push({
           type: 'output',
-          text: 'Technical Proficiencies:\n  Languages:   C++20 (AVX2 SIMD), Java, Python, Go, TypeScript/JS\n  Web & DB:    Node.js, React/Vite, Redis Cache, PostgreSQL/PostGIS\n  Distributed: Redpanda/Kafka, Docker, AWS (EC2/S3), Prometheus, Grafana'
+          text: 'Technical Proficiencies:\n  Languages:   C++, Java, Python, Go, TypeScript/JS, SQL\n  Backend:     REST APIs, FastAPI, Node.js, Redis, PostgreSQL\n  Distributed: Kafka/Redpanda, Docker, AWS (EC2/S3), Prometheus, KEDA'
         });
         break;
 

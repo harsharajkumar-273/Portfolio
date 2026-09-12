@@ -4,36 +4,36 @@ import { Briefcase, Calendar, MapPin } from 'lucide-react';
 export default function Experience() {
   const roles = [
     {
-      title: 'Software Engineer — GenAI Platform & Systems',
+      title: 'Software Engineer — Backend & Platform Systems',
       company: 'Amplify GenAI Innovation (AGI) Center, Vanderbilt University',
-      date: 'Sep 2026 – Present',
+      date: 'Aug 2026 – Present',
       location: 'Nashville, TN',
       details: [
-        'Engineered scalable GenAI platform tooling, API integrations, and multi-agent workflows across Vanderbilt\'s College of Connected Computing.',
-        'Built high-throughput LLM middleware services and vector indexing pipelines to accelerate AI application deployment for university research initiatives.',
-        'Collaborated with operations and research leads to design high-concurrency cloud microservices for GenAI applications.'
+        'Developed REST and streaming APIs (FastAPI/Redis) for Majik, the lab\'s AI coding agent, powering LLM tool calls and session state.',
+        'Added hybrid vector search with PostgreSQL/pgvector, tuning chunking and caching to speed up retrieval.',
+        'Led QA and A/B testing on Amplify\'s UI rewrite and caught 20+ defects before release, tracing each to its root cause in the code — including data-integrity bugs where deletes and saves never reached the backend, and a share flow leaking internal fields to recipients.'
       ]
     },
     {
-      title: 'Platform Architect & Software Engineer',
-      company: 'VU Math Department, Vanderbilt University',
-      date: 'Jan 2024 – May 2024',
-      location: 'Nashville, TN',
-      details: [
-        'Engineered Proofdesk, a collaborative browser-based LaTeX Web IDE, reducing textbook compilation latency by 72% (from 1.1s to 300ms) via client-side WebAssembly (Pyodide).',
-        'Deployed WebSocket sandboxed terminal runtimes (node-pty) inside resource-restricted Docker containers (512MB RAM limit) on AWS EC2.',
-        'Architected a distributed background worker task queue using Redis and BullMQ with local fallback loops to guarantee 100% compiler availability during outages.'
-      ]
-    },
-    {
-      title: 'Systems & Software Engineer Research Assistant',
+      title: 'Systems & Software Engineer, Research Assistant',
       company: 'VU-BEAM Lab, Vanderbilt University',
       date: 'Oct 2025 – Aug 2026',
       location: 'Nashville, TN',
       details: [
-        'Built multi-GPU PyTorch data loader pipelines to preprocess, augment, and cache 10,000+ raw high-resolution scan frames for ReCL ultrasound research, reducing training latency by 40%.',
-        'Instrumented multi-GPU training nodes with Prometheus to track memory, utilization, and thermal metrics, identifying memory leaks and throttling bottlenecks during long-running workloads.',
-        'Optimized core numerical compute pipelines in PyTorch, accelerating batch execution across clinical ultrasound datasets.'
+        'Developed asynchronous multi-GPU PyTorch data pipelines to preprocess, augment, and cache 10,000+ scan frames, cutting training time by ~40%.',
+        'Designed ReCL, a self-supervised contrastive-learning framework (custom NCC loss + InfoNCE) for sim-to-real transfer, built as a pretraining then fine-tuning then active-learning pipeline on the ACCRE Slurm GPU cluster.',
+        'Instrumented multi-GPU training nodes with Prometheus to track memory, utilization, and thermal metrics, surfacing throttling and memory bottlenecks during long-running workloads.'
+      ]
+    },
+    {
+      title: 'Software Engineer',
+      company: 'Vanderbilt University Mathematics Department',
+      date: 'Sep 2025 – May 2026',
+      location: 'Nashville, TN',
+      details: [
+        'Built Proofdesk, a full-stack browser-based LaTeX/PreTeXt IDE (React/Monaco frontend, FastAPI backend) that compiles in the browser with WebAssembly — about 88% faster than the old server-side path — with real-time multi-user editing over Y.js CRDTs.',
+        'Set up a Redis/BullMQ background worker queue with in-memory fallback to keep the compiler available during outages.',
+        'Shipped sandboxed WebSocket terminals (node-pty) in Docker on AWS EC2 via GitHub Actions CI/CD.'
       ]
     }
   ];

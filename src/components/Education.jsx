@@ -36,7 +36,7 @@ export default function Education() {
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
-                <Calendar size={14} style={{ color: 'var(--primary)' }} /> Aug 2025 – Jun 2027
+                <Calendar size={14} style={{ color: 'var(--primary)' }} /> Aug 2025 – Expected Apr 2027
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
                 <MapPin size={14} /> Nashville, TN
@@ -44,7 +44,7 @@ export default function Education() {
             </div>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, margin: 0 }}>
-            Specializing in high-performance computing, distributed backend architecture, system design, and database systems. 
+            GPA 3.6/4.0. Coursework across distributed systems, system design, algorithms, and database systems.
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export default function Education() {
             </div>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, margin: 0 }}>
-            Completed coursework in Algorithms, Data Structures, Operating Systems, Database Management Systems, and Networks. Co-lead of the Technical Division at the Google Developer Student Club (GDSC).
+            GPA 3.5/4.0. Coursework in Algorithms, Data Structures, Operating Systems, Database Management Systems, and Networks. Technical Lead at the Google Developer Student Club (GDSC).
           </p>
         </div>
       </div>
