@@ -4,7 +4,6 @@ import Hero from './components/Hero';
 import Experience from './components/Experience';
 import Skills from './components/Skills';
 import FernOSSim from './components/FernOSSim';
-import RadarSim from './components/RadarSim';
 import LSMTreeSim from './components/LSMTreeSim';
 import PulseStreamSim from './components/PulseStreamSim';
 import GatewaySim from './components/GatewaySim';
@@ -31,12 +30,12 @@ export default function App() {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  // Reset tab to sandbox when switching projects
-  useEffect(() => {
-    if (activeModalProject) {
-      setModalTab('sandbox');
-    }
-  }, [activeModalProject]);
+  // Open a project's modal, defaulting to the interactive sandbox when the
+  // project has one and otherwise straight to the architecture details.
+  const openProject = (proj) => {
+    setModalTab(proj.simulator ? 'sandbox' : 'benchmark');
+    setActiveModalProject(proj.id);
+  };
 
   // HCI Best Practice: Global keyboard event listeners
   useEffect(() => {
@@ -57,14 +56,42 @@ export default function App() {
 
   const projects = [
     {
+      id: 'engram',
+      title: 'Engram — Cognitive Memory Engine & Autonomous Agent',
+      label: 'Autonomous AI Agents',
+      desc: 'An autonomous ReAct agent backed by a cognitive memory engine. The agent runs a think/act/observe tool-use loop with circuit breakers, self-healing retries, and structured step tracing; the memory layer recalls relevant priors before acting and persists learned workflows across runs.',
+      bullets: [
+        'Built an autonomous ReAct agent (tool registry, circuit breakers, self-healing retries, structured step tracing) that recalls relevant context before acting and commits learned procedures afterward.',
+        'Engineered the memory layer with Ebbinghaus decay curves, spaced-repetition reinforcement, NLI contradiction resolution, and entity-graph associative recall.',
+        'Benchmarked retrieval against naive vector-RAG and sliding-window baselines, retaining more relevant facts at a smaller prompt footprint.'
+      ],
+      tags: ['TypeScript', 'LLMs', 'ReAct', 'SQLite', 'Vector Search', 'Agents'],
+      links: [
+        { label: 'Code', href: 'https://github.com/harsharajkumar-273/ENGRAM', primary: true }
+      ],
+      simulator: null,
+      categories: ['web'],
+      benchmarkDetails: {
+        tool: 'Retention benchmark harness vs. RAG / sliding-window baselines',
+        command: 'npm run bench -- --suite=retention',
+        methodology: 'Compared fact retention and prompt size against naive vector-RAG and fixed sliding-window memory on multi-session agent tasks.',
+        bullets: [
+          'Autonomous Loop: A ReAct think/act/observe cycle over a tool registry, with circuit breakers and self-healing retries that recover from failed tool calls without human intervention.',
+          'Cognitive Memory: Ebbinghaus decay curves and spaced-repetition reinforcement weight memories by recency and repeated use; NLI contradiction resolution reconciles conflicting facts.',
+          'Associative Recall: An entity graph links related memories so the agent retrieves context that a flat vector search would miss.',
+          'Persistence: Learned workflows are committed to a SQLite-backed store and recalled across runs, so the agent improves session to session.'
+        ]
+      }
+    },
+    {
       id: 'lsmtree',
       title: 'LSM-Tree Storage Engine',
-      label: 'High-Performance Storage Systems',
-      desc: 'A production-grade C++20 Log-Structured Merge-Tree storage engine featuring io_uring O_DIRECT logging, Leveled Compaction, automated WAL crash recovery, and Block Bloom filters.',
+      label: 'Open-Source Storage Systems',
+      desc: 'An open-source, multi-contributor C++20 Log-Structured Merge-Tree storage engine with an io_uring/O_DIRECT write-ahead log, leveled compaction, a lock-free SkipList MemTable, and block Bloom filters. I lead and maintain the project.',
       bullets: [
-        'Integrated Linux io_uring with O_DIRECT for non-blocking WAL logging and automated WAL crash recovery (<0.85ms replay time).',
-        'Engineered Leveled Compaction (L0 -> L1 tombstone purges) and concurrent lock-free SkipList MemTable with atomic CAS pointers.',
-        'Implemented 64-byte cache-aligned block Bloom filters restricting negative search latency overhead to 1 cache line miss.'
+        'Lead and maintain the engine as project owner, reviewing and integrating 100+ pull requests across the WAL, compaction, MemTable, and Bloom-filter subsystems.',
+        'Own the architecture and benchmark documentation and drive code-review quality on crash recovery and multithreaded concurrency.',
+        'The engine sustains 254,000+ ops/sec, with io_uring/O_DIRECT WAL logging, leveled compaction (L0 -> L1 tombstone purges), and cache-aligned block Bloom filters for fast negative lookups.'
       ],
       tags: ['C++20', 'io_uring', 'Crash Recovery', 'Leveled Compaction', 'Block Bloom Filters'],
       links: [
@@ -73,14 +100,14 @@ export default function App() {
       simulator: <LSMTreeSim />,
       categories: ['systems'],
       benchmarkDetails: {
-        tool: 'Custom C++ Benchmark Harness & Crash Test Suite',
+        tool: 'Project benchmark harness & crash-test suite',
         command: './build/lsm_benchmark --threads=8 --duration=60 --ops=10000000',
-        methodology: 'Evaluated in-memory write throughput, WAL crash recovery replay time, and read-miss bypassing latency.',
+        methodology: "Characterizes the engine's in-memory write throughput, WAL crash-recovery replay time, and read-miss bypass latency.",
         bullets: [
-          'Direct I/O Logging: Direct WAL ingestion via Linux io_uring with O_DIRECT bypasses kernel page cache locks, hitting 254,000+ ops/sec.',
-          'Crash Recovery SLA: Replays pending WAL transactions in < 0.85ms for 5,000 keys with CRC32 checksum corruption verification.',
-          'Leveled Compaction: Merges L0 SSTables into L1 SSTables via single-pass multiway merge sort, purging DELETE tombstones in background threads.',
-          'Read Bypassing: Cache-aligned block Bloom filters filter out key misses, restricting negative search overhead to a single CPU cache line miss (0.76μs latency).'
+          'Direct I/O Logging: WAL ingestion via Linux io_uring with O_DIRECT bypasses kernel page cache locks, reaching 254,000+ ops/sec.',
+          'Crash Recovery: Replays pending WAL transactions with CRC32 checksum corruption verification on restart.',
+          'Leveled Compaction: Merges L0 SSTables into L1 via single-pass multiway merge sort, purging DELETE tombstones in background threads.',
+          'Read Bypassing: Cache-aligned block Bloom filters filter out key misses, restricting negative search overhead to roughly a single CPU cache-line miss.'
         ]
       }
     },
@@ -116,7 +143,7 @@ export default function App() {
       label: 'Distributed Cloud Infrastructure',
       desc: 'A resilient, production-grade telemetry platform built on Redpanda (Kafka), Redis idempotency edge locks, PostgreSQL, Prometheus metrics, and KEDA consumer lag auto-scaling.',
       bullets: [
-        'Decoupled ingestion gate returning HTTP 202 Accepted (< 8ms SLA), producing to Redpanda (Kafka) topic partitions.',
+        'Decoupled ingestion gate returning HTTP 202 Accepted immediately, producing to Redpanda (Kafka) topic partitions.',
         'Implemented Dead-Letter Queue (DLQ) routing, exponential backoff retries, and dual-layer idempotency (Redis SETNX + Postgres ON CONFLICT).',
         'Configured Prometheus consumer lag monitoring and KEDA Kubernetes auto-scaling (scaling consumer pods 1 -> 10 based on partition lag).'
       ],
@@ -131,7 +158,7 @@ export default function App() {
         command: 'locust -f tests/locustfile.py --headless -u 1000 -r 100 --host http://localhost:3000',
         methodology: 'Evaluated ingestion throughput, consumer lag draining speed, and fault recovery under simulated DB outages.',
         bullets: [
-          'Ingestion Speed: Asynchronous Fastify gateway acknowledges payloads in < 8ms (P99 12.4ms), sustaining 50,000+ metrics/sec.',
+          'Ingestion Speed: Asynchronous Fastify gateway load-tested at ~3,990 requests/sec across 120,000 requests with zero errors, acknowledging payloads before asynchronous processing.',
           'Fault Isolation: Malformed or unprocessable metrics route to Dead-Letter Queue (telemetry-dlq), while DB timeouts execute exponential backoff with jitter.',
           'KEDA Auto-scaling: Kubernetes ScaledObject monitors Prometheus consumer lag metrics, scaling worker pods from 1 to 10 replicas when lag exceeds 100 messages.',
           'Batch Persistence: Consumer workers aggregate partition streams into 1,000-record transactions, writing bulk upserts to PostgreSQL in 14.5ms.'
@@ -234,7 +261,7 @@ export default function App() {
             margin: '0 auto 2.5rem auto',
             lineHeight: 1.6
           }}>
-            A showcase of core systems implementations. Select a domain to filter, and launch dynamic interactive simulators.
+            A showcase of systems and platform work. Filter by domain, then launch an interactive simulator or open the architecture and benchmark details.
           </p>
 
           {/* Tab Navigation - IDE Tab bar style with WAI-ARIA tablist accessibility */}
@@ -330,8 +357,8 @@ export default function App() {
                     }}>
                       {p.label}
                     </span>
-                    <button 
-                      onClick={() => setActiveModalProject(p.id)}
+                    <button
+                      onClick={() => openProject(p)}
                       className="btn"
                       style={{ 
                         padding: '0.25rem 0.75rem', 
@@ -341,7 +368,7 @@ export default function App() {
                         fontFamily: 'var(--font-mono)'
                       }}
                     >
-                      Simulate ⚡
+                      {p.simulator ? 'Simulate ⚡' : 'Details →'}
                     </button>
                   </div>
                   
@@ -459,7 +486,7 @@ export default function App() {
                 textTransform: 'uppercase',
                 letterSpacing: '1px'
               }}>
-                {selectedProjForModal.label} Sandbox
+                {selectedProjForModal.label}{selectedProjForModal.simulator ? ' Sandbox' : ''}
               </span>
               <h3 id="modal-title" className="font-space" style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
                 {selectedProjForModal.title}
@@ -505,25 +532,27 @@ export default function App() {
               marginBottom: '1.5rem',
               paddingBottom: 0
             }}>
-              <button
-                onClick={() => setModalTab('sandbox')}
-                role="tab"
-                aria-selected={modalTab === 'sandbox'}
-                className="font-mono"
-                style={{
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  background: 'transparent',
-                  borderBottom: modalTab === 'sandbox' ? '2px solid var(--primary)' : '2px solid transparent',
-                  color: modalTab === 'sandbox' ? 'var(--text-main)' : 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                ⚡ Interactive Sandbox
-              </button>
+              {selectedProjForModal.simulator && (
+                <button
+                  onClick={() => setModalTab('sandbox')}
+                  role="tab"
+                  aria-selected={modalTab === 'sandbox'}
+                  className="font-mono"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    background: 'transparent',
+                    borderBottom: modalTab === 'sandbox' ? '2px solid var(--primary)' : '2px solid transparent',
+                    color: modalTab === 'sandbox' ? 'var(--text-main)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  ⚡ Interactive Sandbox
+                </button>
+              )}
               <button
                 onClick={() => setModalTab('benchmark')}
                 role="tab"
