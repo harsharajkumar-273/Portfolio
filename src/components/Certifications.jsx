@@ -22,7 +22,6 @@ export default function Certifications() {
       issued: 'Nov 2024',
       credentialId: 'DA594ED396D6BED',
       skills: ['Artificial Intelligence (AI)', 'Cloud Computing', 'Azure'],
-      credentialUrl: '/Credentials%20-%20harshar-1294%20_%20Microsoft%20Learn.pdf',
       logo: (
         <svg width="18" height="18" viewBox="0 0 23 23" style={{ minWidth: '18px' }}>
           <rect x="0" y="0" width="11" height="11" fill="#f25022" />
