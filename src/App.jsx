@@ -47,7 +47,7 @@ export default function App() {
       // 2. ⌘K or Ctrl+K triggers functional shortcut shown in Hero
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        window.location.href = 'mailto:harsharajkumar273@gmail.com';
+        window.location.href = 'mailto:harsha.raj.kumar@vanderbilt.edu';
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -120,7 +120,7 @@ export default function App() {
       bullets: [
         'Integrated automated Webhooks API to execute AST-based static code analysis on code submissions.',
         'Engineered an asynchronous LLM code review pipeline parsing code diffs to detect security flaws and syntax bugs.',
-        'Implemented local caching and token optimization algorithms to reduce LLM API latency by 60%.'
+        'Implemented local caching and token-optimization heuristics that cut redundant LLM token usage by ~60% on whitespace-only diffs in local testing.'
       ],
       tags: ['TypeScript', 'Node.js', 'Webhooks API', 'AST Parsers', 'LLMs', 'NPM Package'],
       links: [
@@ -134,7 +134,7 @@ export default function App() {
         bullets: [
           'Webhook Ingestion: Sub-second webhook acknowledgement with asynchronous background diff parsing.',
           'AST Static Analysis: Parses syntax tree chunks to extract modified functions and variable scopes before LLM processing.',
-          'Token Optimization: Filters out whitespace-only diffs, reducing LLM API token consumption by 60%.'
+          'Token Optimization: Filters out whitespace-only diffs, cutting LLM token consumption by ~60% on those diffs in local testing.'
         ]
       }
     },
@@ -218,7 +218,7 @@ export default function App() {
         methodology: 'Evaluated Dijkstra safe-path routing on PostGIS graphs scaled by exponential decay hazard telemetry ages.',
         bullets: [
           'Spatial Decayed Weighting: Dynamic Dijkstra weights scaled using an exponential decay offset exp(-1.5t) based on active hazard telemetry ages.',
-          'Graph Computation Limits: Completed full safe-path searches on a 50,000-edge urban grid in under 8 milliseconds.',
+          'Graph Computation Limits: Completed full safe-path searches on a 50,000-edge urban grid in roughly 8 milliseconds in local benchmarks.',
           'Decoupled Workers: Decoupled telemetry write listeners (ingesting 2,000 updates/sec) from the path-finding computation worker via Socket.io channels, preventing UI thread blocking.'
         ]
       }
@@ -231,7 +231,7 @@ export default function App() {
       bullets: [
         'Decoupled auth middleware checking edge cache tokens under 0.1ms.',
         'Built dynamic circuit breakers flipping states to prevent cascading microservice outages.',
-        'Sustained over 25,000 requests per second under peak traffic testing.'
+        'Sustained ~25,000 requests/sec in local wrk load testing.'
       ],
       tags: ['Node.js', 'Redis Cache', 'Prometheus', 'SLO Testing'],
       links: [
@@ -246,7 +246,7 @@ export default function App() {
         bullets: [
           'Auth Caching: Implemented lightweight token verification cache in Redis, reducing auth check middleware execution to under 0.1ms.',
           'Cascading Outage Mitigation: Configured sliding-window Circuit Breakers that automatically trip to serving fallback static payloads when downstream timeouts hit 5%.',
-          'Performance Limits: Gateway sustained 25,000 requests per second under peak concurrent load with a stable p99 latency of ~4.5ms, utilizing non-blocking asynchronous I/O.'
+          'Performance Limits: In local wrk load testing the gateway sustained ~25,000 requests/sec with a stable p99 around 4.5ms, using non-blocking asynchronous I/O. (Single-machine loopback numbers, not production.)'
         ]
       }
     }
