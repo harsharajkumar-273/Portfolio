@@ -110,7 +110,7 @@ export default function Hero() {
         justifyContent: 'center',
         flexWrap: 'wrap'
       }}>
-        <a href="mailto:harsharajkumar273@gmail.com" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+        <a href="mailto:harsha.raj.kumar@vanderbilt.edu" className="btn btn-primary" style={{ textDecoration: 'none' }}>
           <Mail size={14} /> Get in Touch <span className="keycap" style={{ padding: '0.1rem 0.25rem', fontSize: '0.55rem', marginLeft: '4px' }}>⌘K</span>
         </a>
         <a href="https://github.com/harsharajkumar-273" target="_blank" rel="noreferrer" className="btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
