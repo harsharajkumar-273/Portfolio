@@ -47,7 +47,7 @@ export default function App() {
       // 2. ⌘K or Ctrl+K triggers functional shortcut shown in Hero
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        window.location.href = 'mailto:harsharajkumar273@gmail.com';
+        window.location.href = 'mailto:harsha.raj.kumar@vanderbilt.edu';
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -57,6 +57,7 @@ export default function App() {
   const projects = [
     {
       id: 'engram',
+      featured: true,
       title: 'Engram — Cognitive Memory Engine & Autonomous Agent',
       label: 'Autonomous AI Agents',
       desc: 'An autonomous ReAct agent backed by a cognitive memory engine. The agent runs a think/act/observe tool-use loop with circuit breakers, self-healing retries, and structured step tracing; the memory layer recalls relevant priors before acting and persists learned workflows across runs.',
@@ -119,7 +120,7 @@ export default function App() {
       bullets: [
         'Integrated automated Webhooks API to execute AST-based static code analysis on code submissions.',
         'Engineered an asynchronous LLM code review pipeline parsing code diffs to detect security flaws and syntax bugs.',
-        'Implemented local caching and token optimization algorithms to reduce LLM API latency by 60%.'
+        'Implemented local caching and token-optimization heuristics that cut redundant LLM token usage by ~60% on whitespace-only diffs in local testing.'
       ],
       tags: ['TypeScript', 'Node.js', 'Webhooks API', 'AST Parsers', 'LLMs', 'NPM Package'],
       links: [
@@ -133,12 +134,13 @@ export default function App() {
         bullets: [
           'Webhook Ingestion: Sub-second webhook acknowledgement with asynchronous background diff parsing.',
           'AST Static Analysis: Parses syntax tree chunks to extract modified functions and variable scopes before LLM processing.',
-          'Token Optimization: Filters out whitespace-only diffs, reducing LLM API token consumption by 60%.'
+          'Token Optimization: Filters out whitespace-only diffs, cutting LLM token consumption by ~60% on those diffs in local testing.'
         ]
       }
     },
     {
       id: 'pulsestream',
+      featured: true,
       title: 'PulseStream Distributed Telemetry Platform',
       label: 'Distributed Cloud Infrastructure',
       desc: 'A resilient, production-grade telemetry platform built on Redpanda (Kafka), Redis idempotency edge locks, PostgreSQL, Prometheus metrics, and KEDA consumer lag auto-scaling.',
@@ -166,6 +168,35 @@ export default function App() {
       }
     },
     {
+      id: 'proofdesk',
+      featured: true,
+      title: 'Proofdesk Collaborative Web IDE',
+      label: 'Full-Stack Platforms',
+      desc: 'A browser-based LaTeX/PreTeXt IDE that compiles in the browser with WebAssembly (Pyodide) instead of round-tripping to a server, with real-time multi-user editing over Y.js CRDTs and sandboxed Docker builds for heavy PDF renders.',
+      bullets: [
+        'Moved compilation into the browser with Pyodide (Python compiled to WebAssembly) in a Web Worker — measured p50 358ms vs. ~2.9s for the old server-side Docker path (~88% faster), with zero server round-trips for WASM renders.',
+        'Built real-time multi-user editing on Y.js CRDTs (measured ~0.43ms average one-way sync over localhost) with a Monaco editor frontend.',
+        'Offloaded heavy pdflatex builds to sandboxed, resource-capped Docker containers (512MB RAM, 64 PIDs) via a BullMQ/Redis queue, streaming output back over Server-Sent Events.'
+      ],
+      tags: ['React', 'TypeScript', 'WebAssembly (Pyodide)', 'Y.js CRDT', 'Docker', 'BullMQ'],
+      links: [
+        { label: 'Code', href: 'https://github.com/harsharajkumar-273/Proofdesk', primary: true }
+      ],
+      simulator: null,
+      categories: ['web'],
+      benchmarkDetails: {
+        tool: 'Playwright compile-latency benchmark & Y.js CRDT sync harness',
+        command: 'npx playwright test -c playwright.benchmark.config.ts',
+        methodology: 'Drives the real editor UI for 5 builds per path (in-browser WASM vs. server Docker) and measures one-way CRDT sync latency over 30 rounds.',
+        bullets: [
+          'Compile Latency: In-browser WebAssembly compilation measured at p50 358ms versus p50 ~2.9s for the server-side Docker build — about 88% faster.',
+          'Zero Round-Trips: WASM PreTeXt/XML rendering happens entirely client-side, with no bytes sent to the server during a render.',
+          'Real-Time Collaboration: Y.js CRDT edits sync at roughly 0.43ms average (p50 0.29ms, p95 1.19ms) one-way over localhost.',
+          'Sandboxed Builds: Heavy pdflatex jobs run in Docker containers capped at 512MB RAM and 64 PIDs, dispatched through a BullMQ/Redis queue with output streamed over Server-Sent Events.'
+        ]
+      }
+    },
+    {
       id: 'fernos',
       title: 'ARIA Disaster Pathfinder',
       label: 'Distributed Systems',
@@ -187,7 +218,7 @@ export default function App() {
         methodology: 'Evaluated Dijkstra safe-path routing on PostGIS graphs scaled by exponential decay hazard telemetry ages.',
         bullets: [
           'Spatial Decayed Weighting: Dynamic Dijkstra weights scaled using an exponential decay offset exp(-1.5t) based on active hazard telemetry ages.',
-          'Graph Computation Limits: Completed full safe-path searches on a 50,000-edge urban grid in under 8 milliseconds.',
+          'Graph Computation Limits: Completed full safe-path searches on a 50,000-edge urban grid in roughly 8 milliseconds in local benchmarks.',
           'Decoupled Workers: Decoupled telemetry write listeners (ingesting 2,000 updates/sec) from the path-finding computation worker via Socket.io channels, preventing UI thread blocking.'
         ]
       }
@@ -200,7 +231,7 @@ export default function App() {
       bullets: [
         'Decoupled auth middleware checking edge cache tokens under 0.1ms.',
         'Built dynamic circuit breakers flipping states to prevent cascading microservice outages.',
-        'Sustained over 25,000 requests per second under peak traffic testing.'
+        'Sustained ~25,000 requests/sec in local wrk load testing.'
       ],
       tags: ['Node.js', 'Redis Cache', 'Prometheus', 'SLO Testing'],
       links: [
@@ -215,17 +246,102 @@ export default function App() {
         bullets: [
           'Auth Caching: Implemented lightweight token verification cache in Redis, reducing auth check middleware execution to under 0.1ms.',
           'Cascading Outage Mitigation: Configured sliding-window Circuit Breakers that automatically trip to serving fallback static payloads when downstream timeouts hit 5%.',
-          'Performance Limits: Gateway sustained 25,000 requests per second under peak concurrent load with a stable p99 latency of ~4.5ms, utilizing non-blocking asynchronous I/O.'
+          'Performance Limits: In local wrk load testing the gateway sustained ~25,000 requests/sec with a stable p99 around 4.5ms, using non-blocking asynchronous I/O. (Single-machine loopback numbers, not production.)'
         ]
       }
     }
   ];
 
-  const filteredProjects = projects.filter(
+  const featuredProjects = projects.filter((p) => p.featured);
+  const otherProjects = projects.filter((p) => !p.featured);
+  const filteredOthers = otherProjects.filter(
     (p) => activeTab === 'all' || p.categories.includes(activeTab)
   );
 
   const selectedProjForModal = projects.find(p => p.id === activeModalProject);
+
+  // Single project card, reused across the Featured and More Projects tiers.
+  const renderCard = (p) => (
+    <div
+      key={p.id}
+      className="glass-card"
+      style={{
+        padding: '1.75rem',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: '1.2rem',
+        borderTop: p.featured ? '3px solid var(--primary)' : '1px solid var(--border)'
+      }}
+    >
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <span style={{
+            fontSize: '0.65rem',
+            fontFamily: 'var(--font-mono)',
+            color: 'var(--primary)',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+          }}>
+            {p.label}
+          </span>
+          <button
+            onClick={() => openProject(p)}
+            className="btn"
+            style={{
+              padding: '0.25rem 0.75rem',
+              fontSize: '0.65rem',
+              borderColor: 'rgba(79, 70, 229, 0.25)',
+              color: 'var(--primary)',
+              fontFamily: 'var(--font-mono)'
+            }}
+          >
+            {p.simulator ? 'Simulate ⚡' : 'Details →'}
+          </button>
+        </div>
+
+        <h3 className="font-space" style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.6rem' }}>
+          {p.title}
+        </h3>
+
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>
+          {p.desc}
+        </p>
+      </div>
+
+      <div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
+          {p.tags.map((tag) => (
+            <span key={tag} className="tag tag-blue" style={{ fontSize: '0.58rem', padding: '0.22rem 0.55rem' }}>
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {p.links.map((link, lIdx) => (
+            <a
+              key={lIdx}
+              href={link.href}
+              target="_blank"
+              rel="noreferrer"
+              className={link.primary ? 'btn btn-primary' : 'btn'}
+              style={{
+                textDecoration: 'none',
+                display: 'inline-flex',
+                fontSize: '0.7rem',
+                padding: '0.4rem 0.9rem',
+                flexGrow: 1
+              }}
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -240,6 +356,7 @@ export default function App() {
         
         {/* Projects Section */}
         <section id="projects" className="container" style={{ marginTop: '4rem' }}>
+          <div className="kicker" style={{ justifyContent: 'center' }}>Featured Work</div>
           <h2 className="font-space" style={{
             fontSize: '2rem',
             fontWeight: 800,
@@ -250,29 +367,63 @@ export default function App() {
             WebkitTextFillColor: 'transparent',
             letterSpacing: '-0.04em'
           }}>
-            Featured Projects & Simulators
+            Projects I'd Point To First
           </h2>
           <p style={{
             textAlign: 'center',
             color: 'var(--text-muted)',
             fontSize: '0.95rem',
             marginBottom: '2.5rem',
-            maxWidth: '600px',
+            maxWidth: '640px',
             margin: '0 auto 2.5rem auto',
             lineHeight: 1.6
           }}>
-            A showcase of systems and platform work. Filter by domain, then launch an interactive simulator or open the architecture and benchmark details.
+            My three strongest builds — each with a real README, an architecture diagram, and reproducible benchmarks in the repo. Open one to see the architecture and measured numbers.
+          </p>
+
+          {/* Featured tier */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '1.25rem',
+            marginBottom: '4rem'
+          }}>
+            {featuredProjects.map((p) => renderCard(p))}
+          </div>
+
+          {/* More projects */}
+          <div className="kicker" style={{ justifyContent: 'center' }}>More Projects</div>
+          <h2 className="font-space" style={{
+            fontSize: '1.6rem',
+            fontWeight: 800,
+            marginBottom: '0.5rem',
+            textAlign: 'center',
+            color: 'var(--text-main)',
+            letterSpacing: '-0.03em'
+          }}>
+            The Rest of the Lab
+          </h2>
+          <p style={{
+            textAlign: 'center',
+            color: 'var(--text-muted)',
+            fontSize: '0.9rem',
+            marginBottom: '2rem',
+            maxWidth: '560px',
+            margin: '0 auto 2rem auto',
+            lineHeight: 1.6
+          }}>
+            More systems and platform experiments. Filter by domain, then launch an interactive simulator or open the details.
           </p>
 
           {/* Tab Navigation - IDE Tab bar style with WAI-ARIA tablist accessibility */}
-          <div 
+          <div
             role="tablist"
             aria-label="Project Categories"
             style={{
               display: 'flex',
               justifyContent: 'center',
               gap: '2px',
-              marginBottom: '3rem',
+              marginBottom: '2.5rem',
               borderBottom: '1px solid var(--border)',
               paddingBottom: 0
             }}
@@ -322,8 +473,8 @@ export default function App() {
             })}
           </div>
 
-          {/* 2-Column Grid Layout - WAI-ARIA tabpanel */}
-          <div 
+          {/* Secondary grid - WAI-ARIA tabpanel */}
+          <div
             id="projects-grid"
             role="tabpanel"
             aria-labelledby={`tab-${activeTab}`}
@@ -333,86 +484,7 @@ export default function App() {
               gap: '1.25rem'
             }}
           >
-            {filteredProjects.map((p) => (
-              <div 
-                key={p.id} 
-                className="glass-card" 
-                style={{ 
-                  padding: '1.75rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: '1.2rem'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <span style={{ 
-                      fontSize: '0.65rem', 
-                      fontFamily: 'var(--font-mono)', 
-                      color: 'var(--primary)', 
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '1px'
-                    }}>
-                      {p.label}
-                    </span>
-                    <button
-                      onClick={() => openProject(p)}
-                      className="btn"
-                      style={{ 
-                        padding: '0.25rem 0.75rem', 
-                        fontSize: '0.65rem', 
-                        borderColor: 'rgba(56, 189, 248, 0.25)',
-                        color: 'var(--primary)',
-                        fontFamily: 'var(--font-mono)'
-                      }}
-                    >
-                      {p.simulator ? 'Simulate ⚡' : 'Details →'}
-                    </button>
-                  </div>
-                  
-                  <h3 className="font-space" style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.6rem' }}>
-                    {p.title}
-                  </h3>
-                  
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>
-                    {p.desc}
-                  </p>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
-                    {p.tags.map((tag) => (
-                      <span key={tag} className="tag tag-blue" style={{ fontSize: '0.58rem', padding: '0.22rem 0.55rem' }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    {p.links.map((link, lIdx) => (
-                      <a 
-                        key={lIdx}
-                        href={link.href}
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className={link.primary ? 'btn btn-primary' : 'btn'}
-                        style={{ 
-                          textDecoration: 'none', 
-                          display: 'inline-flex', 
-                          fontSize: '0.7rem', 
-                          padding: '0.4rem 0.9rem',
-                          flexGrow: 1
-                        }}
-                      >
-                        {link.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
+            {filteredOthers.map((p) => renderCard(p))}
           </div>
         </section>
         

@@ -89,7 +89,7 @@ export default function TerminalDrawer() {
         if (subCmd === 'contact' || subCmd === 'contact.txt') {
           newHistory.push({
             type: 'output',
-            text: 'Contact Credentials:\n  Email:    harsharajkumar273@gmail.com\n  GitHub:   https://github.com/harsharajkumar-273\n  LinkedIn: https://linkedin.com/in/harsharajkumar273'
+            text: 'Contact Credentials:\n  Email:    harsha.raj.kumar@vanderbilt.edu\n  GitHub:   https://github.com/harsharajkumar-273\n  LinkedIn: https://linkedin.com/in/harsharajkumar273'
           });
         } else {
           newHistory.push({
@@ -102,7 +102,7 @@ export default function TerminalDrawer() {
       case 'contact':
         newHistory.push({
           type: 'output',
-          text: 'Contact Credentials:\n  Email:    harsharajkumar273@gmail.com\n  GitHub:   https://github.com/harsharajkumar-273\n  LinkedIn: https://linkedin.com/in/harsharajkumar273'
+          text: 'Contact Credentials:\n  Email:    harsha.raj.kumar@vanderbilt.edu\n  GitHub:   https://github.com/harsharajkumar-273\n  LinkedIn: https://linkedin.com/in/harsharajkumar273'
         });
         break;
 
