@@ -84,6 +84,37 @@ function CaseStudy({ project, onClose }) {
 
 export default function App() {
   const [selected, setSelected] = useState(null);
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cleanups = [];
+    if (!reduce) {
+      const revealEls = document.querySelectorAll('.project, .secondary-work > article, .experience-list > article, .open-grid, .background-section > div, footer > div');
+      revealEls.forEach(el => el.classList.add('reveal'));
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('in-view'); obs.unobserve(entry.target); } });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+      revealEls.forEach(el => io.observe(el));
+      cleanups.push(() => io.disconnect());
+    }
+    const navLinks = new Map();
+    document.querySelectorAll('nav a[href^="#"]').forEach(a => navLinks.set(a.getAttribute('href').slice(1), a));
+    const sections = ['work', 'experience', 'open-source'].map(id => document.getElementById(id)).filter(Boolean);
+    if (sections.length) {
+      const spy = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            navLinks.forEach(a => a.classList.remove('active'));
+            const link = navLinks.get(entry.target.id);
+            if (link) link.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-45% 0px -50% 0px' });
+      sections.forEach(s => spy.observe(s));
+      cleanups.push(() => spy.disconnect());
+    }
+    return () => cleanups.forEach(fn => fn());
+  }, []);
   return <>
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header"><a className="wordmark" href="#about">HAR<span>SHA.</span></a><nav aria-label="Main navigation"><a href="#work">Work</a><a href="#experience">Experience</a><a href="#open-source">Open source</a><a className="nav-contact" href="mailto:harsha.raj.kumar@vanderbilt.edu">Let’s talk <ArrowUpRight size={15}/></a></nav></header>
