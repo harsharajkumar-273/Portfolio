@@ -1,29 +1,8 @@
-import React, { useState } from 'react';
-import { Mail, ChevronDown, Info, FileText } from 'lucide-react';
+import React from 'react';
+import { Mail, ChevronDown, FileText } from 'lucide-react';
 
 export default function Hero() {
-  const [activeStat, setActiveStat] = useState(null);
 
-  const statDetails = [
-    {
-      title: '88% Faster Textbook Compiles',
-      source: 'VU Math Department — Proofdesk Browser IDE',
-      desc: 'How it was measured: the previous pipeline compiled PreTeXt/LaTeX sources on the server on every change. By moving compilation into the browser with WebAssembly, server round-trips were eliminated and compile latency dropped by about 88% versus the old server-side path.',
-      calculation: 'Reported as ~88% faster in-browser compilation versus the server-side baseline.'
-    },
-    {
-      title: '80% Ingestion Space Saved',
-      source: 'Repost-Radar Deduplicator (BEAM Lab Stream Ingestion)',
-      desc: 'How it was measured: Raw telemetry streams capture redundant frame variables (Jaccard similarity > 95%) at 60 Hz. By running a MinHash LSH filter at the ingestion boundary to drop matching bucket frames before database write transactions, database disk utilization dropped from ~100 GB to ~20 GB per test cycle.',
-      calculation: 'Formula: (100GB - 20GB) / 100GB = 80% memory footprint compression.'
-    },
-    {
-      title: '40% Training Pipeline Speedup',
-      source: 'VU-BEAM Lab PyTorch Numeric Compute Optimizations',
-      desc: 'How it was measured: The data loader loader suffered from host-to-device memory copy bottlenecks on multi-GPU nodes. By utilizing PyTorch pinned memory layouts (pin_memory=True), vectorizing signals into torch tensors, and threading data fetches (num_workers=4), training cycle preprocessing dropped from 45 seconds to 27 seconds per epoch.',
-      calculation: 'Formula: (45s - 27s) / 45s = 40% decrease in epoch batch execution latency.'
-    }
-  ];
 
   return (
     <section id="about" style={{
@@ -75,7 +54,7 @@ export default function Hero() {
             animation: 'pulse 2s infinite',
             marginLeft: '4px'
           }} />
-          <span style={{ color: 'var(--secondary)', fontWeight: 600 }}>Active (Summer/Fall 2027)</span>
+          <span style={{ color: 'var(--secondary)', fontWeight: 600 }}>Seeking 2027 new-grad roles</span>
         </div>
       </div>
       
@@ -99,8 +78,7 @@ export default function Hero() {
         margin: '0 auto'
       }}>
         MS Computer Science at <strong style={{ color: 'var(--text-main)' }}>Vanderbilt University</strong>.
-        I build backends and distributed systems — a Kafka-based telemetry pipeline, the backend for my
-        university's GenAI platform, and an open-source C++ storage engine I maintain — with a bug-fix merged into PyTorch.
+        Graduating April 2027. I build backend services and developer tools, including a Kafka telemetry pipeline and a collaborative editor. I also maintain a C++ storage-engine project.
       </p>
       
       <div style={{
@@ -131,101 +109,10 @@ export default function Hero() {
         </a>
       </div>
 
-      {/* Dynamic Stats Row - Interactive click-to-expand details */}
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '2.5rem' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.4rem',
-          fontSize: '0.75rem',
-          fontFamily: 'var(--font-mono)',
-          color: 'var(--text-muted)'
-        }}>
-          <Info size={12} style={{ color: 'var(--primary)' }} />
-          <span>Click any metric below to see how it was achieved</span>
-        </div>
-        <div 
-          className="stats-row" 
-          style={{ 
-            width: '100%', 
-            margin: '0.5rem auto 0 auto',
-            gridTemplateColumns: 'repeat(3, 1fr)'
-          }}
-        >
-          {[
-            { num: '88', suffix: '%', label: 'Faster compiles', color: 'var(--primary)' },
-            { num: '80', suffix: '%', label: 'Ingestion space saved', color: 'var(--accent-purple)' },
-            { num: '40', suffix: '%', label: 'Pipeline speedup', color: 'var(--secondary)' }
-          ].map((stat, idx) => {
-            const isSelected = activeStat === idx;
-            return (
-              <div 
-                key={idx} 
-                onClick={() => setActiveStat(isSelected ? null : idx)}
-                className="stat" 
-                style={{ 
-                  cursor: 'pointer',
-                  background: isSelected ? 'var(--primary-glow)' : 'transparent',
-                  borderBottom: isSelected ? `2px solid ${stat.color}` : '1px solid transparent',
-                  transition: 'all 0.2s ease',
-                  padding: '1.5rem'
-                }}
-                title="Click to view calculation details"
-              >
-                <div>
-                  <span className="stat-num">{stat.num}</span>
-                  <span className="stat-suf" style={{ color: stat.color }}>{stat.suffix}</span>
-                </div>
-                <span className="stat-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                  {stat.label} <Info size={10} style={{ color: 'var(--text-muted)' }} />
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Expandable Verification Console */}
-        {activeStat !== null && (
-          <div style={{
-            background: 'var(--terminal-bg)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '1.25rem',
-            textAlign: 'left',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.75rem',
-            color: 'var(--text-muted)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            animation: 'fadeIn 0.25s ease-in-out'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.25rem' }}>
-              <span style={{ color: 'var(--primary)', fontWeight: 600 }}>$ verify_metric --id={activeStat}</span>
-              <button 
-                onClick={() => setActiveStat(null)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.75rem' }}
-              >
-                close [✕]
-              </button>
-            </div>
-            <div>
-              <strong style={{ color: 'var(--text-main)' }}>Metric Target:</strong> {statDetails[activeStat].title}
-            </div>
-            <div>
-              <strong style={{ color: 'var(--text-main)' }}>Environment:</strong> {statDetails[activeStat].source}
-            </div>
-            <div style={{ marginTop: '0.25rem', lineHeight: 1.5 }}>
-              <strong style={{ color: 'var(--text-main)' }}>Measurement details:</strong> {statDetails[activeStat].desc}
-            </div>
-            <div style={{ color: 'var(--accent-gold)', marginTop: '0.25rem' }}>
-              <strong>Verification:</strong> {statDetails[activeStat].calculation}
-            </div>
-          </div>
-        )}
-      </div>
-      
+      <a href="https://github.com/pytorch/pytorch/commit/f594cadbd10e281c04c0e471b40c3b0569e47c43" className="glass-card" target="_blank" rel="noreferrer" style={{ padding: '1.25rem', marginTop: '1.5rem', textDecoration: 'none', color: 'var(--text-main)' }}>
+        <strong>Accepted contribution to PyTorch</strong>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 0 }}>Input validation and regression tests for torch.unravel_index. View the upstream change.</p>
+      </a>
       <a 
         href="#experience"
         style={{ 

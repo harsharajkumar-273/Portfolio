@@ -11,7 +11,7 @@ export default function Skills() {
     {
       title: 'Systems & Infrastructure',
       color: 'var(--accent-purple)',
-      skills: ['Distributed systems', 'Kafka / Redpanda', 'PostgreSQL', 'Redis', 'RocksDB', 'io_uring', 'Docker', 'AWS (EC2/S3/ECS)', 'GitHub Actions CI/CD', 'Prometheus', 'KEDA']
+      skills: ['Distributed systems', 'Kafka / Redpanda', 'PostgreSQL', 'Redis', 'Docker', 'AWS deployment tooling', 'GitHub Actions CI/CD', 'Prometheus']
     },
     {
       title: 'Frameworks & AI',

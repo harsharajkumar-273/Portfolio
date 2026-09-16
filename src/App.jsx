@@ -3,10 +3,8 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Experience from './components/Experience';
 import Skills from './components/Skills';
-import FernOSSim from './components/FernOSSim';
 import LSMTreeSim from './components/LSMTreeSim';
 import PulseStreamSim from './components/PulseStreamSim';
-import GatewaySim from './components/GatewaySim';
 import Education from './components/Education';
 import Certifications from './components/Certifications';
 import Publications from './components/Publications';
@@ -55,202 +53,206 @@ export default function App() {
   }, []);
 
   const projects = [
-    {
-      id: 'engram',
-      featured: true,
-      title: 'Engram — Cognitive Memory Engine & Autonomous Agent',
-      label: 'Autonomous AI Agents',
-      desc: 'An autonomous ReAct agent backed by a cognitive memory engine. The agent runs a think/act/observe tool-use loop with circuit breakers, self-healing retries, and structured step tracing; the memory layer recalls relevant priors before acting and persists learned workflows across runs.',
-      bullets: [
-        'Built an autonomous ReAct agent (tool registry, circuit breakers, self-healing retries, structured step tracing) that recalls relevant context before acting and commits learned procedures afterward.',
-        'Engineered the memory layer with Ebbinghaus decay curves, spaced-repetition reinforcement, NLI contradiction resolution, and entity-graph associative recall.',
-        'Benchmarked retrieval against naive vector-RAG and sliding-window baselines, retaining more relevant facts at a smaller prompt footprint.'
-      ],
-      tags: ['TypeScript', 'LLMs', 'ReAct', 'SQLite', 'Vector Search', 'Agents'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/ENGRAM', primary: true }
-      ],
-      simulator: null,
-      categories: ['web'],
-      benchmarkDetails: {
-        tool: 'Retention benchmark harness vs. RAG / sliding-window baselines',
-        command: 'npm run bench -- --suite=retention',
-        methodology: 'Compared fact retention and prompt size against naive vector-RAG and fixed sliding-window memory on multi-session agent tasks.',
-        bullets: [
-          'Autonomous Loop: A ReAct think/act/observe cycle over a tool registry, with circuit breakers and self-healing retries that recover from failed tool calls without human intervention.',
-          'Cognitive Memory: Ebbinghaus decay curves and spaced-repetition reinforcement weight memories by recency and repeated use; NLI contradiction resolution reconciles conflicting facts.',
-          'Associative Recall: An entity graph links related memories so the agent retrieves context that a flat vector search would miss.',
-          'Persistence: Learned workflows are committed to a SQLite-backed store and recalled across runs, so the agent improves session to session.'
-        ]
+  {
+    "id": "proofdesk",
+    "title": "Proofdesk Collaborative Editor",
+    "label": "Developer tools",
+    "desc": "React/TypeScript and Node/Express editor with Y.js collaboration, browser-side PreTeXt/XML previews using Pyodide, and queued server builds.",
+    "bullets": [
+      "Introduced core editor and preview integrations, then maintained the application with open-source contributors.",
+      "Browser preview uses a custom XML-to-HTML transformation. Server builds handle the fuller toolchain.",
+      "Community contributions include parser expansion, security corrections, and Redis-outage queue fallback."
+    ],
+    "tags": [
+      "React",
+      "Node / Express",
+      "Pyodide",
+      "Y.js",
+      "BullMQ"
+    ],
+    "links": [
+      {
+        "label": "Code",
+        "href": "https://github.com/harsharajkumar-273/Proofdesk",
+        "primary": true
       }
-    },
-    {
-      id: 'lsmtree',
-      title: 'LSM-Tree Storage Engine',
-      label: 'Open-Source Storage Systems',
-      desc: 'An open-source, multi-contributor C++20 Log-Structured Merge-Tree storage engine with an io_uring/O_DIRECT write-ahead log, leveled compaction, a lock-free SkipList MemTable, and block Bloom filters. I lead and maintain the project.',
-      bullets: [
-        'Lead and maintain the engine as project owner, reviewing and integrating 100+ pull requests across the WAL, compaction, MemTable, and Bloom-filter subsystems.',
-        'Own the architecture and benchmark documentation and drive code-review quality on crash recovery and multithreaded concurrency.',
-        'The engine sustains 254,000+ ops/sec, with io_uring/O_DIRECT WAL logging, leveled compaction (L0 -> L1 tombstone purges), and cache-aligned block Bloom filters for fast negative lookups.'
-      ],
-      tags: ['C++20', 'io_uring', 'Crash Recovery', 'Leveled Compaction', 'Block Bloom Filters'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/lsm_tree', primary: true }
-      ],
-      simulator: <LSMTreeSim />,
-      categories: ['systems'],
-      benchmarkDetails: {
-        tool: 'Project benchmark harness & crash-test suite',
-        command: './build/lsm_benchmark --threads=8 --duration=60 --ops=10000000',
-        methodology: "Characterizes the engine's in-memory write throughput, WAL crash-recovery replay time, and read-miss bypass latency.",
-        bullets: [
-          'Direct I/O Logging: WAL ingestion via Linux io_uring with O_DIRECT bypasses kernel page cache locks, reaching 254,000+ ops/sec.',
-          'Crash Recovery: Replays pending WAL transactions with CRC32 checksum corruption verification on restart.',
-          'Leveled Compaction: Merges L0 SSTables into L1 via single-pass multiway merge sort, purging DELETE tombstones in background threads.',
-          'Read Bypassing: Cache-aligned block Bloom filters filter out key misses, restricting negative search overhead to roughly a single CPU cache-line miss.'
-        ]
-      }
-    },
-    {
-      id: 'revertai',
-      title: 'revert-ai Automated Code Analyzer',
-      label: 'Developer Tooling & AI Automation',
-      desc: 'An automated developer security and code quality analysis tool published on NPM that executes AST static code analysis and delivers inline AI code review feedback.',
-      bullets: [
-        'Integrated automated Webhooks API to execute AST-based static code analysis on code submissions.',
-        'Engineered an asynchronous LLM code review pipeline parsing code diffs to detect security flaws and syntax bugs.',
-        'Implemented local caching and token-optimization heuristics that cut redundant LLM token usage by ~60% on whitespace-only diffs in local testing.'
-      ],
-      tags: ['TypeScript', 'Node.js', 'Webhooks API', 'AST Parsers', 'LLMs', 'NPM Package'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/revert-ai', primary: true }
-      ],
-      categories: ['systems', 'web'],
-      benchmarkDetails: {
-        tool: 'Webhook Test Harness & AST Benchmarks',
-        command: 'npx revert-ai --analyze --file=src/index.ts',
-        methodology: 'Evaluated webhook response latency, AST parse speed, and LLM prompt token optimization.',
-        bullets: [
-          'Webhook Ingestion: Sub-second webhook acknowledgement with asynchronous background diff parsing.',
-          'AST Static Analysis: Parses syntax tree chunks to extract modified functions and variable scopes before LLM processing.',
-          'Token Optimization: Filters out whitespace-only diffs, cutting LLM token consumption by ~60% on those diffs in local testing.'
-        ]
-      }
-    },
-    {
-      id: 'pulsestream',
-      featured: true,
-      title: 'PulseStream Distributed Telemetry Platform',
-      label: 'Distributed Cloud Infrastructure',
-      desc: 'A resilient, production-grade telemetry platform built on Redpanda (Kafka), Redis idempotency edge locks, PostgreSQL, Prometheus metrics, and KEDA consumer lag auto-scaling.',
-      bullets: [
-        'Decoupled ingestion gate returning HTTP 202 Accepted immediately, producing to Redpanda (Kafka) topic partitions.',
-        'Implemented Dead-Letter Queue (DLQ) routing, exponential backoff retries, and dual-layer idempotency (Redis SETNX + Postgres ON CONFLICT).',
-        'Configured Prometheus consumer lag monitoring and KEDA Kubernetes auto-scaling (scaling consumer pods 1 -> 10 based on partition lag).'
-      ],
-      tags: ['TypeScript', 'Redpanda/Kafka', 'KEDA Auto-scaling', 'Prometheus', 'Redis', 'PostgreSQL'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/PulseStream', primary: true }
-      ],
-      simulator: <PulseStreamSim />,
-      categories: ['systems', 'web'],
-      benchmarkDetails: {
-        tool: 'Locust Ingestion Harness & Prometheus Consumer Lag Suite',
-        command: 'locust -f tests/locustfile.py --headless -u 1000 -r 100 --host http://localhost:3000',
-        methodology: 'Evaluated ingestion throughput, consumer lag draining speed, and fault recovery under simulated DB outages.',
-        bullets: [
-          'Ingestion Speed: Asynchronous Fastify gateway load-tested at ~3,990 requests/sec across 120,000 requests with zero errors, acknowledging payloads before asynchronous processing.',
-          'Fault Isolation: Malformed or unprocessable metrics route to Dead-Letter Queue (telemetry-dlq), while DB timeouts execute exponential backoff with jitter.',
-          'KEDA Auto-scaling: Kubernetes ScaledObject monitors Prometheus consumer lag metrics, scaling worker pods from 1 to 10 replicas when lag exceeds 100 messages.',
-          'Batch Persistence: Consumer workers aggregate partition streams into 1,000-record transactions, writing bulk upserts to PostgreSQL in 14.5ms.'
-        ]
-      }
-    },
-    {
-      id: 'proofdesk',
-      featured: true,
-      title: 'Proofdesk Collaborative Web IDE',
-      label: 'Full-Stack Platforms',
-      desc: 'A browser-based LaTeX/PreTeXt IDE that compiles in the browser with WebAssembly (Pyodide) instead of round-tripping to a server, with real-time multi-user editing over Y.js CRDTs and sandboxed Docker builds for heavy PDF renders.',
-      bullets: [
-        'Moved compilation into the browser with Pyodide (Python compiled to WebAssembly) in a Web Worker — measured p50 358ms vs. ~2.9s for the old server-side Docker path (~88% faster), with zero server round-trips for WASM renders.',
-        'Built real-time multi-user editing on Y.js CRDTs (measured ~0.43ms average one-way sync over localhost) with a Monaco editor frontend.',
-        'Offloaded heavy pdflatex builds to sandboxed, resource-capped Docker containers (512MB RAM, 64 PIDs) via a BullMQ/Redis queue, streaming output back over Server-Sent Events.'
-      ],
-      tags: ['React', 'TypeScript', 'WebAssembly (Pyodide)', 'Y.js CRDT', 'Docker', 'BullMQ'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/Proofdesk', primary: true }
-      ],
-      simulator: null,
-      categories: ['web'],
-      benchmarkDetails: {
-        tool: 'Playwright compile-latency benchmark & Y.js CRDT sync harness',
-        command: 'npx playwright test -c playwright.benchmark.config.ts',
-        methodology: 'Drives the real editor UI for 5 builds per path (in-browser WASM vs. server Docker) and measures one-way CRDT sync latency over 30 rounds.',
-        bullets: [
-          'Compile Latency: In-browser WebAssembly compilation measured at p50 358ms versus p50 ~2.9s for the server-side Docker build — about 88% faster.',
-          'Zero Round-Trips: WASM PreTeXt/XML rendering happens entirely client-side, with no bytes sent to the server during a render.',
-          'Real-Time Collaboration: Y.js CRDT edits sync at roughly 0.43ms average (p50 0.29ms, p95 1.19ms) one-way over localhost.',
-          'Sandboxed Builds: Heavy pdflatex jobs run in Docker containers capped at 512MB RAM and 64 PIDs, dispatched through a BullMQ/Redis queue with output streamed over Server-Sent Events.'
-        ]
-      }
-    },
-    {
-      id: 'fernos',
-      title: 'ARIA Disaster Pathfinder',
-      label: 'Distributed Systems',
-      desc: 'A resilient crisis command platform. Models urban infrastructure as a spatial PostGIS graph and computes safest paths to affected sectors by penalizing hazard decay rates.',
-      bullets: [
-        'Integrated custom Dijkstra weights scaled by exponential decay offsets exp(-1.5t).',
-        'Implemented real-time Socket.io responder updates triggered by telemetry listeners.',
-        'Maintained graph uptime via asynchronous ML workers decoupling graph search from telemetry ingestion.'
-      ],
-      tags: ['TypeScript', 'PostGIS', 'Socket.io'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/ARIA', primary: true }
-      ],
-      simulator: <FernOSSim />,
-      categories: ['systems', 'web'],
-      benchmarkDetails: {
-        tool: 'pgTap spatial regression suite & Node.js Pathfinder runner',
-        command: 'npm run test:benchmark -- --nodes=50000 --edges=120000',
-        methodology: 'Evaluated Dijkstra safe-path routing on PostGIS graphs scaled by exponential decay hazard telemetry ages.',
-        bullets: [
-          'Spatial Decayed Weighting: Dynamic Dijkstra weights scaled using an exponential decay offset exp(-1.5t) based on active hazard telemetry ages.',
-          'Graph Computation Limits: Completed full safe-path searches on a 50,000-edge urban grid in roughly 8 milliseconds in local benchmarks.',
-          'Decoupled Workers: Decoupled telemetry write listeners (ingesting 2,000 updates/sec) from the path-finding computation worker via Socket.io channels, preventing UI thread blocking.'
-        ]
-      }
-    },
-    {
-      id: 'gateway',
-      title: 'Production API Gateway',
-      label: 'Distributed Systems & Web',
-      desc: 'A production-grade Node.js gateway with distributed tracing, SLO metrics, chaos engineering controls, and a custom rate limiter based on an EWMA PID controller model.',
-      bullets: [
-        'Decoupled auth middleware checking edge cache tokens under 0.1ms.',
-        'Built dynamic circuit breakers flipping states to prevent cascading microservice outages.',
-        'Sustained ~25,000 requests/sec in local wrk load testing.'
-      ],
-      tags: ['Node.js', 'Redis Cache', 'Prometheus', 'SLO Testing'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/API-gateway', primary: true }
-      ],
-      simulator: <GatewaySim />,
-      categories: ['web'],
-      benchmarkDetails: {
-        tool: 'wrk HTTP benchmarking tool',
-        command: 'wrk -t12 -c400 -d30s http://localhost:8080/api/v1/auth',
-        methodology: 'Conducted loopback load testing to determine maximum request threshold before latency degradation.',
-        bullets: [
-          'Auth Caching: Implemented lightweight token verification cache in Redis, reducing auth check middleware execution to under 0.1ms.',
-          'Cascading Outage Mitigation: Configured sliding-window Circuit Breakers that automatically trip to serving fallback static payloads when downstream timeouts hit 5%.',
-          'Performance Limits: In local wrk load testing the gateway sustained ~25,000 requests/sec with a stable p99 around 4.5ms, using non-blocking asynchronous I/O. (Single-machine loopback numbers, not production.)'
-        ]
-      }
+    ],
+    "featured": true,
+    "simulator": null,
+    "categories": [
+      "web"
+    ],
+    "benchmarkDetails": {
+      "tool": "Evidence and scope",
+      "command": "npx playwright test -c playwright.benchmark.config.ts",
+      "methodology": "Recorded local runs: five samples per preview path and 30 localhost collaboration rounds. The preview paths use different files and cache treatment, so no comparative speedup is claimed.",
+      "bullets": [
+        "Browser XML preview: recorded median 358 ms, five local samples.",
+        "Primed server HTML preview: recorded median 2,914 ms, five local samples. Different workflow and output scope.",
+        "Y.js synchronization: recorded average 0.43 ms over localhost. This is not Internet latency."
+      ]
     }
-  ];
+  },
+  {
+    "id": "pulsestream",
+    "title": "PulseStream Telemetry Pipeline",
+    "label": "Backend and event processing",
+    "desc": "Express ingestion API, Redpanda/Kafka transport, Redis request idempotency, and PostgreSQL persistence.",
+    "bullets": [
+      "Publish device-keyed events to Redpanda before returning HTTP 202; persistence runs in a separate consumer.",
+      "Use Redis request keys and PostgreSQL conflict handling to manage duplicate submissions.",
+      "Includes consumer metrics, malformed-message DLQ routing, and a KEDA configuration. Production capacity is not established."
+    ],
+    "tags": [
+      "TypeScript",
+      "Express",
+      "Kafka / Redpanda",
+      "Redis",
+      "PostgreSQL"
+    ],
+    "links": [
+      {
+        "label": "Code",
+        "href": "https://github.com/harsharajkumar-273/PulseStream",
+        "primary": true
+      }
+    ],
+    "featured": true,
+    "simulator": <PulseStreamSim />,
+    "categories": [
+      "systems",
+      "web"
+    ],
+    "benchmarkDetails": {
+      "tool": "Evidence and scope",
+      "command": "node benchmarks/load_test.js",
+      "methodology": "Historical local Docker run: 50 connections, 30 seconds, about 120K requests. Measures HTTP responses after broker publication, not completed database persistence.",
+      "bullets": [
+        "Recorded average: about 3,991 HTTP responses/sec; no reported non-2xx/network errors in that run.",
+        "The consumer executes individual inserts inside a transaction. No 1,000-row bulk-upsert claim.",
+        "The KEDA Kafka trigger targets the consumer topic. An autoscaling experiment on Kubernetes has not been demonstrated here."
+      ]
+    }
+  },
+  {
+    "id": "engram",
+    "title": "Engram Memory and Agent Prototype",
+    "label": "Agent tooling",
+    "desc": "A TypeScript ReAct loop with SQLite memory, retrieval scoring, decay, and structured traces.",
+    "bullets": [
+      "Implemented the memory store and agent loop, with a bounded number of steps and error handling.",
+      "All 73 tests and TypeScript checking passed after the September 15 corrections.",
+      "The comparison with simple RAG and sliding-window baselines uses a small synthetic fixture."
+    ],
+    "tags": [
+      "TypeScript",
+      "SQLite",
+      "ReAct",
+      "Memory retrieval"
+    ],
+    "links": [
+      {
+        "label": "Code",
+        "href": "https://github.com/harsharajkumar-273/ENGRAM",
+        "primary": true
+      }
+    ],
+    "featured": true,
+    "simulator": null,
+    "categories": [
+      "web"
+    ],
+    "benchmarkDetails": {
+      "tool": "Evidence and scope",
+      "command": "npm test && npm run benchmark",
+      "methodology": "Seven hand-written memories, three queries, synthetic vectors, and supplied contradiction decisions. Demonstrates mechanisms rather than general retrieval superiority.",
+      "bullets": [
+        "The sliding-window baseline also reaches full recall in this fixture.",
+        "Context size uses an approximate character-based token estimate.",
+        "Tool execution is local; filesystem restrictions do not constitute an OS sandbox."
+      ]
+    }
+  },
+  {
+    "id": "lsmtree",
+    "title": "LSM-Tree Storage Engine",
+    "label": "Project lead and maintainer",
+    "desc": "A collaborative C++ storage-engine project. My role is architecture documentation, review, and integration; contributors wrote the storage internals.",
+    "bullets": [
+      "Selected explicit WAL append offsets in a design review and requested ordering and recovery regression tests.",
+      "Integrated contributor changes and maintained architecture and benchmark documentation.",
+      "SkipList, WAL, and compaction implementation credit belongs to the contributors."
+    ],
+    "tags": [
+      "C++",
+      "Code review",
+      "WAL",
+      "Storage systems"
+    ],
+    "links": [
+      {
+        "label": "Code",
+        "href": "https://github.com/harsharajkumar-273/lsm_tree",
+        "primary": true
+      }
+    ],
+    "featured": false,
+    "simulator": <LSMTreeSim />,
+    "categories": [
+      "systems",
+      "web"
+    ],
+    "benchmarkDetails": {
+      "tool": "Evidence and scope",
+      "command": "cmake --build build && ./build/bench_write",
+      "methodology": "See issue #14 and PR #125 for the review and contributor implementation. The write benchmark compares different durability modes.",
+      "bullets": [
+        "Historical single-machine Docker result: 254,095 sequential writes/sec, without per-record fsync in the io_uring arm.",
+        "The synchronous baseline uses fdatasync per record, so the ratio is not an equivalent-durability speedup.",
+        "The interactive diagram is illustrative and does not execute the C++ engine."
+      ]
+    }
+  },
+  {
+    "id": "pixelguard",
+    "title": "Pixel Guard",
+    "label": "New computer-vision prototype",
+    "desc": "Python/OpenCV inspection prototype with a deterministic decision loop, FastAPI endpoints, and JSON session traces.",
+    "bullets": [
+      "Uses blur, contour coverage, and geometric defect heuristics to choose a follow-up action.",
+      "Sharpening simulates recapture; ticket and human-review actions are recorded outcomes, not external integrations.",
+      "Synthetic scenes support local testing. No real-defect accuracy, deployed AWS system, or COOL speedup is claimed."
+    ],
+    "tags": [
+      "Python",
+      "OpenCV",
+      "FastAPI",
+      "JSON traces"
+    ],
+    "links": [
+      {
+        "label": "Code",
+        "href": "https://github.com/harsharajkumar-273/pixel-gaurd",
+        "primary": true
+      }
+    ],
+    "featured": false,
+    "simulator": null,
+    "categories": [
+      "web"
+    ],
+    "benchmarkDetails": {
+      "tool": "Evidence and scope",
+      "command": "python scripts/benchmark.py --image data/samples/pass.jpg --n 50",
+      "methodology": "New September 2026 prototype. Benchmark timing covers one local image-analysis call, not HTTP throughput, camera operation, or production inspection accuracy.",
+      "bullets": [
+        "Uses blur, contour coverage, and geometric defect heuristics to choose a follow-up action.",
+        "Sharpening simulates recapture; ticket and human-review actions are recorded outcomes, not external integrations.",
+        "Synthetic scenes support local testing. No real-defect accuracy, deployed AWS system, or COOL speedup is claimed."
+      ]
+    }
+  }
+];
 
   const featuredProjects = projects.filter((p) => p.featured);
   const otherProjects = projects.filter((p) => !p.featured);
@@ -378,7 +380,7 @@ export default function App() {
             margin: '0 auto 2.5rem auto',
             lineHeight: 1.6
           }}>
-            My three strongest builds — each with a real README, an architecture diagram, and reproducible benchmarks in the repo. Open one to see the architecture and measured numbers.
+            Selected projects with source, contribution history, and explicit measurement limits. Open a card for evidence and scope.
           </p>
 
           {/* Featured tier */}
@@ -423,6 +425,7 @@ export default function App() {
               display: 'flex',
               justifyContent: 'center',
               gap: '2px',
+              flexWrap: 'wrap',
               marginBottom: '2.5rem',
               borderBottom: '1px solid var(--border)',
               paddingBottom: 0
@@ -558,7 +561,7 @@ export default function App() {
                 textTransform: 'uppercase',
                 letterSpacing: '1px'
               }}>
-                {selectedProjForModal.label}{selectedProjForModal.simulator ? ' Sandbox' : ''}
+                {selectedProjForModal.label}{selectedProjForModal.simulator ? ' Simulation' : ''}
               </span>
               <h3 id="modal-title" className="font-space" style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
                 {selectedProjForModal.title}
@@ -642,13 +645,13 @@ export default function App() {
                   transition: 'all 0.15s ease'
                 }}
               >
-                📊 Benchmark & Architecture Details
+                Evidence and architecture
               </button>
             </div>
 
             <div style={{ marginTop: '1.5rem' }}>
               {modalTab === 'sandbox' ? (
-                selectedProjForModal.simulator
+                <><p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Illustrative simulation. Values are generated in the browser, not measured from the project.</p>{selectedProjForModal.simulator}</>
               ) : (
                 <div style={{
                   display: 'flex',
@@ -658,7 +661,7 @@ export default function App() {
                   lineHeight: 1.6
                 }}>
                   <div style={{
-                    background: '#09090b',
+                    background: 'var(--bg-dark)',
                     border: '1px solid var(--border)',
                     borderRadius: '8px',
                     padding: '1rem',
@@ -693,9 +696,6 @@ export default function App() {
                     marginTop: '0.5rem'
                   }}>
                     {selectedProjForModal.benchmarkDetails.bullets.map((b, bIdx) => {
-                      const parts = b.split(':');
-                      const title = parts[0];
-                      const content = parts.slice(1).join(':');
                       return (
                         <li key={bIdx} style={{ position: 'relative', paddingLeft: '1.25rem' }}>
                           <span style={{
@@ -708,7 +708,7 @@ export default function App() {
                             background: 'var(--primary)',
                             display: 'inline-block'
                           }} />
-                          <strong style={{ color: 'var(--text-main)' }}>{title}:</strong>{content}
+                          {b}
                         </li>
                       );
                     })}

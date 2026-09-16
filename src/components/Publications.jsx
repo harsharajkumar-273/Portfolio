@@ -9,7 +9,7 @@ export default function Publications() {
       date: '2025',
       badge: 'IEEE Published',
       color: 'var(--primary)',
-      desc: 'Developed an integrated deep learning framework combining Graph Convolutional Networks (GCN), Graph Attention Networks (GAT), and Autoencoders (AE) for robust and noise-resilient anomaly detection in Industrial IoT sensor networks.',
+      desc: 'Co-author of an IEEE CICT 2025 paper on GCN, GAT, and autoencoder approaches to Industrial IoT anomaly detection.',
       link: 'https://ieeexplore.ieee.org/abstract/document/11399172'
     },
     {
@@ -18,7 +18,7 @@ export default function Publications() {
       date: '2025',
       badge: 'Hackathon Finalist',
       color: 'var(--accent-purple)',
-      desc: 'Co-developed a high-impact crisis response system, winning finalist recognition for social impact and real-time systems execution among competitive university engineering cohorts.',
+      desc: 'Finalist at the Vanderbilt Global Good Hackathon in 2025. Project: ARIA.',
       link: 'https://github.com/harsharajkumar-273/ARIA'
     }
   ];
