@@ -4,14 +4,14 @@ import { Briefcase, Calendar, MapPin } from 'lucide-react';
 export default function Experience() {
   const roles = [
     {
-      title: 'Software Engineer — Backend & Platform Systems',
+      title: 'Software Engineer - Backend & Platform Systems',
       company: 'Amplify GenAI Innovation (AGI) Center, Vanderbilt University',
       date: 'Aug 2026 – Present',
       location: 'Nashville, TN',
       details: [
         'Developed REST and streaming APIs (FastAPI/Redis) for Majik, the lab\'s AI coding agent, powering LLM tool calls and session state.',
-        'Added hybrid vector search with PostgreSQL/pgvector, tuning chunking and caching to speed up retrieval.',
-        'Led QA and A/B testing on Amplify\'s UI rewrite and caught 20+ defects before release, tracing each to its root cause in the code — including data-integrity bugs where deletes and saves never reached the backend, and a share flow leaking internal fields to recipients.'
+        'Added hybrid vector search with PostgreSQL/pgvector, working on chunking and caching.',
+        'Tested Amplify\'s UI rewrite and investigated save, delete, and sharing defects before release.'
       ]
     },
     {
@@ -20,9 +20,8 @@ export default function Experience() {
       date: 'Oct 2025 – Aug 2026',
       location: 'Nashville, TN',
       details: [
-        'Developed asynchronous multi-GPU PyTorch data pipelines to preprocess, augment, and cache 10,000+ scan frames, cutting training time by ~40%.',
-        'Designed ReCL, a self-supervised contrastive-learning framework (custom NCC loss + InfoNCE) for sim-to-real transfer, built as a pretraining then fine-tuning then active-learning pipeline on the ACCRE Slurm GPU cluster.',
-        'Instrumented multi-GPU training nodes with Prometheus to track memory, utilization, and thermal metrics, surfacing throttling and memory bottlenecks during long-running workloads.'
+        'Implemented PyTorch contrastive pretraining and supervised fine-tuning in the public ReCL codebase.',
+        'Built data-loading and augmentation code for ultrasound research.'
       ]
     },
     {
@@ -31,9 +30,8 @@ export default function Experience() {
       date: 'Sep 2025 – May 2026',
       location: 'Nashville, TN',
       details: [
-        'Built Proofdesk, a full-stack browser-based LaTeX/PreTeXt IDE (React/Monaco frontend, FastAPI backend) that compiles in the browser with WebAssembly — about 88% faster than the old server-side path — with real-time multi-user editing over Y.js CRDTs.',
-        'Set up a Redis/BullMQ background worker queue with in-memory fallback to keep the compiler available during outages.',
-        'Shipped sandboxed WebSocket terminals (node-pty) in Docker on AWS EC2 via GitHub Actions CI/CD.'
+        'Developed the Proofdesk editor with a React frontend and Node/Express backend.',
+        'Continued the project after this appointment; later browser-preview features and community fixes are documented in the repository history.'
       ]
     }
   ];

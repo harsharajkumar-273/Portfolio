@@ -44,7 +44,7 @@ export default function Education() {
             </div>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, margin: 0 }}>
-            GPA 3.6/4.0. Coursework across distributed systems, system design, algorithms, and database systems.
+            GPA 3.6/4.0.
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export default function Education() {
             </div>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7, margin: 0 }}>
-            GPA 3.5/4.0. Coursework in Algorithms, Data Structures, Operating Systems, Database Management Systems, and Networks. Technical Lead at the Google Developer Student Club (GDSC).
+            GPA 3.5/4.0. Technical Lead at the Google Developer Student Club (GDSC).
           </p>
         </div>
       </div>

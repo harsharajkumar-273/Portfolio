@@ -73,7 +73,7 @@ export default function GatewaySim() {
       <div className="widget-header" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
         <ShieldCheck size={20} style={{ color: 'var(--primary)' }} />
         <div>
-          <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>Production API Gateway</span>
+          <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>API Gateway Simulation</span>
           <span style={{ fontSize: '0.75rem', color: 'var(--primary)', display: 'block', letterSpacing: '1px', textTransform: 'uppercase', marginTop: '0.1rem', fontWeight: 600 }}>SRE SLO tracker & Circuit Breaker</span>
         </div>
       </div>

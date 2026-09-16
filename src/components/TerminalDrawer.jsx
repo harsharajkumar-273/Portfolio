@@ -61,7 +61,7 @@ export default function TerminalDrawer() {
         if (subCmd === 'projects' || subCmd === 'project') {
           newHistory.push({
             type: 'output',
-            text: 'Flagship Projects:\n  1. engram        - Autonomous ReAct agent + cognitive memory engine (TypeScript)\n  2. pulsestream   - Redpanda/Kafka telemetry ingestion pipeline\n  3. lsm_tree      - Open-source C++ LSM storage engine (maintainer)\n  4. proofdesk     - Browser-based LaTeX IDE (WebAssembly, CRDTs)\n  5. api_gateway   - Rate limiter & circuit breaker gateway'
+            text: 'Flagship Projects:\n  1. engram        - Autonomous ReAct agent + cognitive memory engine (TypeScript)\n  2. pulsestream   - Redpanda/Kafka telemetry ingestion pipeline\n  3. lsm_tree      - Open-source C++ LSM storage engine (maintainer)\n  4. proofdesk     - Collaborative editor with XML previews and server builds\n  5. pixel_guard   - Rule-based OpenCV inspection prototype\n  6. api_gateway   - Gateway prototype'
           });
         } else {
           newHistory.push({
@@ -74,14 +74,14 @@ export default function TerminalDrawer() {
       case 'projects':
         newHistory.push({
           type: 'output',
-          text: 'Flagship Projects:\n  1. engram        - Autonomous ReAct agent + cognitive memory engine (TypeScript)\n  2. pulsestream   - Redpanda/Kafka telemetry ingestion pipeline\n  3. lsm_tree      - Open-source C++ LSM storage engine (maintainer)\n  4. proofdesk     - Browser-based LaTeX IDE (WebAssembly, CRDTs)\n  5. api_gateway   - Rate limiter & circuit breaker gateway'
+          text: 'Flagship Projects:\n  1. engram        - Autonomous ReAct agent + cognitive memory engine (TypeScript)\n  2. pulsestream   - Redpanda/Kafka telemetry ingestion pipeline\n  3. lsm_tree      - Open-source C++ LSM storage engine (maintainer)\n  4. proofdesk     - Collaborative editor with XML previews and server builds\n  5. pixel_guard   - Rule-based OpenCV inspection prototype\n  6. api_gateway   - Gateway prototype'
         });
         break;
 
       case 'skills':
         newHistory.push({
           type: 'output',
-          text: 'Technical Proficiencies:\n  Languages:   C++, Java, Python, Go, TypeScript/JS, SQL\n  Backend:     REST APIs, FastAPI, Node.js, Redis, PostgreSQL\n  Distributed: Kafka/Redpanda, Docker, AWS (EC2/S3), Prometheus, KEDA'
+          text: 'Technical Proficiencies:\n  Languages:   C++, Java, Python, Go, TypeScript/JS, SQL\n  Backend:     REST APIs, FastAPI, Node.js, Redis, PostgreSQL\n  Distributed: Kafka/Redpanda, Docker, AWS deployment tooling, Prometheus'
         });
         break;
 

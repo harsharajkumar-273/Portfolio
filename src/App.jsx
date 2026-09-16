@@ -1,737 +1,109 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Experience from './components/Experience';
-import Skills from './components/Skills';
-import FernOSSim from './components/FernOSSim';
-import LSMTreeSim from './components/LSMTreeSim';
-import PulseStreamSim from './components/PulseStreamSim';
-import GatewaySim from './components/GatewaySim';
-import Education from './components/Education';
-import Certifications from './components/Certifications';
-import Publications from './components/Publications';
-import TerminalDrawer from './components/TerminalDrawer';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowUpRight, ArrowRight, Code2, FileText, X, Check, Layers, GitPullRequest } from 'lucide-react';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('all');
-  const [activeModalProject, setActiveModalProject] = useState(null);
-  const [modalTab, setModalTab] = useState('sandbox');
+const github = 'https://github.com/harsharajkumar-273';
+const upstream = 'https://github.com/pytorch/pytorch/commit/f594cadbd10e281c04c0e471b40c3b0569e47c43';
+const projects = [
+  { id: 'pulse', name: 'PulseStream', category: 'EVENT-DRIVEN BACKEND', repo: 'PulseStream', number: '01',
+    intro: 'From an HTTP request to stored telemetry.',
+    description: 'A telemetry pipeline connecting an Express API, Kafka transport, and PostgreSQL persistence.',
+    stack: ['TypeScript', 'Kafka / Redpanda', 'PostgreSQL', 'Redis'],
+    contribution: 'Built the ingestion API and consumer, with request idempotency and database conflict handling.',
+    decision: 'Acknowledge ingestion after broker publication; keep database persistence in a separate consumer.',
+    evidence: 'Recorded local ingestion test', result: '~3,991', unit: 'HTTP responses / sec',
+    details: ['The historical local Docker run used 50 connections over 30 seconds, with approximately 120K requests and no reported non-2xx/network errors.', 'The measurement covers ingestion acknowledgments, not completed database persistence. It has not been rerun for the latest corrections.', 'The prepared consumer corrections commit offsets after database and DLQ effects. Six focused failure-path tests pass; a live restart and ID-reconciliation test is still outstanding.', 'KEDA configuration exists. A working autoscaling deployment has not been demonstrated.'],
+    command: 'node benchmarks/load_test.js', nodes: ['Express API', 'Redpanda', 'Consumer', 'PostgreSQL'], labels: ['publish', 'consume', 'persist'] },
+  { id: 'proof', name: 'Proofdesk', category: 'COLLABORATIVE DEVELOPER TOOLS', repo: 'Proofdesk', number: '02',
+    intro: 'Write together. Preview in the browser.',
+    description: 'A technical-document editor with collaborative editing, browser previews, and queued server builds.',
+    stack: ['React / Monaco', 'Node / Express', 'Y.js', 'Pyodide'],
+    contribution: 'Introduced the editor and core integrations; maintain the application with open-source contributors.',
+    decision: 'Separate the immediate XML-to-HTML preview from the fuller server build toolchain.',
+    evidence: 'Two distinct execution paths', result: 'Browser + server', unit: 'preview and build workflows',
+    details: ['The browser path is a custom PreTeXt/XML-to-HTML transformation through Pyodide, not a full in-browser LaTeX/PDF compiler.', 'Recorded local medians were 358 ms for browser XML preview and 2,914 ms for primed server HTML preview, with five samples per path. The paths use different inputs and cache treatment, so no comparative compiler speedup is claimed.', 'Community work includes parser expansion, security corrections, and Redis-outage queue fallback. Current functionality is not all my sole implementation.', 'The browser-preview work continued after my Mathematics Department appointment ended in May 2026.'],
+    command: 'npx playwright test -c playwright.benchmark.config.ts', nodes: ['Monaco editor', 'Y.js sync', 'Pyodide preview', 'Queued build'], labels: ['collaborate', 'preview', 'server path'] },
+  { id: 'engram', name: 'Engram', category: 'AGENT INFRASTRUCTURE', repo: 'ENGRAM', number: '03',
+    intro: 'Memory that persists beyond one run.',
+    description: 'A TypeScript ReAct prototype with SQLite memory, retrieval scoring, and structured execution traces.',
+    stack: ['TypeScript', 'SQLite', 'ReAct', 'Memory retrieval'],
+    contribution: 'Built the bounded agent loop and memory layer, including decay, entity associations, and retrieval scoring.',
+    decision: 'Persist memory separately from the immediate context and make tool steps inspectable.',
+    evidence: 'Local verification after corrections', result: '73 tests', unit: 'passing, plus TypeScript checking',
+    details: ['The comparison uses seven hand-written memories, three queries, synthetic vectors, and supplied contradiction decisions. It demonstrates mechanisms, not general superiority to RAG.', 'The sliding-window baseline also achieves full recall in this fixture. Context size uses an approximate character-based token estimate.', 'Prepared corrections restrict ordinary file access to a working directory, make shell execution opt-in, and bind the server to loopback. These guards are not an OS sandbox.', 'A caller deadline does not guarantee cancellation of arbitrary custom-tool side effects.'],
+    command: 'npm test && npm run benchmark', nodes: ['Task', 'Retrieve memory', 'Tool-use loop', 'SQLite + traces'], labels: ['recall', 'act', 'persist'] },
+];
 
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'light';
-  });
+function External({ href, children, className = '' }) {
+  return <a className={className} href={href} target="_blank" rel="noreferrer">{children}<ArrowUpRight size={16} aria-hidden="true" /></a>;
+}
 
+function Architecture({ project }) {
+  if (project.id === 'proof') return <div className="architecture" aria-label="Simplified Proofdesk architecture">
+    <div className="diagram-header"><span className="diagram-dot" />IMPLEMENTATION MAP<span>02 / EDITOR</span></div>
+    <div className="editor-map"><div className="map-node editor-node"><Layers size={24}/><strong>Monaco editor</strong><span>React · TypeScript</span></div><div className="branch-line"/><div className="map-branches"><div className="map-node"><strong>Y.js</strong><span>Shared editing state</span></div><div className="map-node"><strong>Pyodide</strong><span>Browser XML preview</span></div><div className="map-node"><strong>Node + BullMQ</strong><span>Server build path</span></div></div></div>
+    <div className="diagram-footer">Simplified architecture · not a product screenshot</div>
+  </div>;
+  return <div className="architecture" aria-label={`Simplified ${project.name} architecture`}>
+    <div className="diagram-header"><span className="diagram-dot" />IMPLEMENTATION MAP<span>{project.number} / {project.id === 'pulse' ? 'EVENT FLOW' : 'MEMORY LOOP'}</span></div>
+    <div className="flow-map">{project.nodes.map((node, i) => <React.Fragment key={node}><div className="map-node"><span className="node-index">0{i + 1}</span><strong>{node}</strong></div>{i < 3 && <div className="flow-link"><span>{project.labels[i]}</span><ArrowRight size={18}/></div>}</React.Fragment>)}</div>
+    <div className="diagram-note">{project.id === 'pulse' ? <><span>Redis</span> Request idempotency at ingestion</> : <><span>Inspectable steps</span> Retrieval, actions, and persisted state</>}</div>
+    <div className="diagram-footer">Simplified architecture · not a live system</div>
+  </div>;
+}
+
+function CaseStudy({ project, onClose }) {
+  const ref = useRef(null);
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
-
-  // Open a project's modal, defaulting to the interactive sandbox when the
-  // project has one and otherwise straight to the architecture details.
-  const openProject = (proj) => {
-    setModalTab(proj.simulator ? 'sandbox' : 'benchmark');
-    setActiveModalProject(proj.id);
-  };
-
-  // HCI Best Practice: Global keyboard event listeners
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // 1. Escape key closes the active modal
-      if (e.key === 'Escape') {
-        setActiveModalProject(null);
-      }
-      // 2. ⌘K or Ctrl+K triggers functional shortcut shown in Hero
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        window.location.href = 'mailto:harsha.raj.kumar@vanderbilt.edu';
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const projects = [
-    {
-      id: 'engram',
-      featured: true,
-      title: 'Engram — Cognitive Memory Engine & Autonomous Agent',
-      label: 'Autonomous AI Agents',
-      desc: 'An autonomous ReAct agent backed by a cognitive memory engine. The agent runs a think/act/observe tool-use loop with circuit breakers, self-healing retries, and structured step tracing; the memory layer recalls relevant priors before acting and persists learned workflows across runs.',
-      bullets: [
-        'Built an autonomous ReAct agent (tool registry, circuit breakers, self-healing retries, structured step tracing) that recalls relevant context before acting and commits learned procedures afterward.',
-        'Engineered the memory layer with Ebbinghaus decay curves, spaced-repetition reinforcement, NLI contradiction resolution, and entity-graph associative recall.',
-        'Benchmarked retrieval against naive vector-RAG and sliding-window baselines, retaining more relevant facts at a smaller prompt footprint.'
-      ],
-      tags: ['TypeScript', 'LLMs', 'ReAct', 'SQLite', 'Vector Search', 'Agents'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/ENGRAM', primary: true }
-      ],
-      simulator: null,
-      categories: ['web'],
-      benchmarkDetails: {
-        tool: 'Retention benchmark harness vs. RAG / sliding-window baselines',
-        command: 'npm run bench -- --suite=retention',
-        methodology: 'Compared fact retention and prompt size against naive vector-RAG and fixed sliding-window memory on multi-session agent tasks.',
-        bullets: [
-          'Autonomous Loop: A ReAct think/act/observe cycle over a tool registry, with circuit breakers and self-healing retries that recover from failed tool calls without human intervention.',
-          'Cognitive Memory: Ebbinghaus decay curves and spaced-repetition reinforcement weight memories by recency and repeated use; NLI contradiction resolution reconciles conflicting facts.',
-          'Associative Recall: An entity graph links related memories so the agent retrieves context that a flat vector search would miss.',
-          'Persistence: Learned workflows are committed to a SQLite-backed store and recalled across runs, so the agent improves session to session.'
-        ]
-      }
-    },
-    {
-      id: 'lsmtree',
-      title: 'LSM-Tree Storage Engine',
-      label: 'Open-Source Storage Systems',
-      desc: 'An open-source, multi-contributor C++20 Log-Structured Merge-Tree storage engine with an io_uring/O_DIRECT write-ahead log, leveled compaction, a lock-free SkipList MemTable, and block Bloom filters. I lead and maintain the project.',
-      bullets: [
-        'Lead and maintain the engine as project owner, reviewing and integrating 100+ pull requests across the WAL, compaction, MemTable, and Bloom-filter subsystems.',
-        'Own the architecture and benchmark documentation and drive code-review quality on crash recovery and multithreaded concurrency.',
-        'The engine sustains 254,000+ ops/sec, with io_uring/O_DIRECT WAL logging, leveled compaction (L0 -> L1 tombstone purges), and cache-aligned block Bloom filters for fast negative lookups.'
-      ],
-      tags: ['C++20', 'io_uring', 'Crash Recovery', 'Leveled Compaction', 'Block Bloom Filters'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/lsm_tree', primary: true }
-      ],
-      simulator: <LSMTreeSim />,
-      categories: ['systems'],
-      benchmarkDetails: {
-        tool: 'Project benchmark harness & crash-test suite',
-        command: './build/lsm_benchmark --threads=8 --duration=60 --ops=10000000',
-        methodology: "Characterizes the engine's in-memory write throughput, WAL crash-recovery replay time, and read-miss bypass latency.",
-        bullets: [
-          'Direct I/O Logging: WAL ingestion via Linux io_uring with O_DIRECT bypasses kernel page cache locks, reaching 254,000+ ops/sec.',
-          'Crash Recovery: Replays pending WAL transactions with CRC32 checksum corruption verification on restart.',
-          'Leveled Compaction: Merges L0 SSTables into L1 via single-pass multiway merge sort, purging DELETE tombstones in background threads.',
-          'Read Bypassing: Cache-aligned block Bloom filters filter out key misses, restricting negative search overhead to roughly a single CPU cache-line miss.'
-        ]
-      }
-    },
-    {
-      id: 'revertai',
-      title: 'revert-ai Automated Code Analyzer',
-      label: 'Developer Tooling & AI Automation',
-      desc: 'An automated developer security and code quality analysis tool published on NPM that executes AST static code analysis and delivers inline AI code review feedback.',
-      bullets: [
-        'Integrated automated Webhooks API to execute AST-based static code analysis on code submissions.',
-        'Engineered an asynchronous LLM code review pipeline parsing code diffs to detect security flaws and syntax bugs.',
-        'Implemented local caching and token-optimization heuristics that cut redundant LLM token usage by ~60% on whitespace-only diffs in local testing.'
-      ],
-      tags: ['TypeScript', 'Node.js', 'Webhooks API', 'AST Parsers', 'LLMs', 'NPM Package'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/revert-ai', primary: true }
-      ],
-      categories: ['systems', 'web'],
-      benchmarkDetails: {
-        tool: 'Webhook Test Harness & AST Benchmarks',
-        command: 'npx revert-ai --analyze --file=src/index.ts',
-        methodology: 'Evaluated webhook response latency, AST parse speed, and LLM prompt token optimization.',
-        bullets: [
-          'Webhook Ingestion: Sub-second webhook acknowledgement with asynchronous background diff parsing.',
-          'AST Static Analysis: Parses syntax tree chunks to extract modified functions and variable scopes before LLM processing.',
-          'Token Optimization: Filters out whitespace-only diffs, cutting LLM token consumption by ~60% on those diffs in local testing.'
-        ]
-      }
-    },
-    {
-      id: 'pulsestream',
-      featured: true,
-      title: 'PulseStream Distributed Telemetry Platform',
-      label: 'Distributed Cloud Infrastructure',
-      desc: 'A resilient, production-grade telemetry platform built on Redpanda (Kafka), Redis idempotency edge locks, PostgreSQL, Prometheus metrics, and KEDA consumer lag auto-scaling.',
-      bullets: [
-        'Decoupled ingestion gate returning HTTP 202 Accepted immediately, producing to Redpanda (Kafka) topic partitions.',
-        'Implemented Dead-Letter Queue (DLQ) routing, exponential backoff retries, and dual-layer idempotency (Redis SETNX + Postgres ON CONFLICT).',
-        'Configured Prometheus consumer lag monitoring and KEDA Kubernetes auto-scaling (scaling consumer pods 1 -> 10 based on partition lag).'
-      ],
-      tags: ['TypeScript', 'Redpanda/Kafka', 'KEDA Auto-scaling', 'Prometheus', 'Redis', 'PostgreSQL'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/PulseStream', primary: true }
-      ],
-      simulator: <PulseStreamSim />,
-      categories: ['systems', 'web'],
-      benchmarkDetails: {
-        tool: 'Locust Ingestion Harness & Prometheus Consumer Lag Suite',
-        command: 'locust -f tests/locustfile.py --headless -u 1000 -r 100 --host http://localhost:3000',
-        methodology: 'Evaluated ingestion throughput, consumer lag draining speed, and fault recovery under simulated DB outages.',
-        bullets: [
-          'Ingestion Speed: Asynchronous Fastify gateway load-tested at ~3,990 requests/sec across 120,000 requests with zero errors, acknowledging payloads before asynchronous processing.',
-          'Fault Isolation: Malformed or unprocessable metrics route to Dead-Letter Queue (telemetry-dlq), while DB timeouts execute exponential backoff with jitter.',
-          'KEDA Auto-scaling: Kubernetes ScaledObject monitors Prometheus consumer lag metrics, scaling worker pods from 1 to 10 replicas when lag exceeds 100 messages.',
-          'Batch Persistence: Consumer workers aggregate partition streams into 1,000-record transactions, writing bulk upserts to PostgreSQL in 14.5ms.'
-        ]
-      }
-    },
-    {
-      id: 'proofdesk',
-      featured: true,
-      title: 'Proofdesk Collaborative Web IDE',
-      label: 'Full-Stack Platforms',
-      desc: 'A browser-based LaTeX/PreTeXt IDE that compiles in the browser with WebAssembly (Pyodide) instead of round-tripping to a server, with real-time multi-user editing over Y.js CRDTs and sandboxed Docker builds for heavy PDF renders.',
-      bullets: [
-        'Moved compilation into the browser with Pyodide (Python compiled to WebAssembly) in a Web Worker — measured p50 358ms vs. ~2.9s for the old server-side Docker path (~88% faster), with zero server round-trips for WASM renders.',
-        'Built real-time multi-user editing on Y.js CRDTs (measured ~0.43ms average one-way sync over localhost) with a Monaco editor frontend.',
-        'Offloaded heavy pdflatex builds to sandboxed, resource-capped Docker containers (512MB RAM, 64 PIDs) via a BullMQ/Redis queue, streaming output back over Server-Sent Events.'
-      ],
-      tags: ['React', 'TypeScript', 'WebAssembly (Pyodide)', 'Y.js CRDT', 'Docker', 'BullMQ'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/Proofdesk', primary: true }
-      ],
-      simulator: null,
-      categories: ['web'],
-      benchmarkDetails: {
-        tool: 'Playwright compile-latency benchmark & Y.js CRDT sync harness',
-        command: 'npx playwright test -c playwright.benchmark.config.ts',
-        methodology: 'Drives the real editor UI for 5 builds per path (in-browser WASM vs. server Docker) and measures one-way CRDT sync latency over 30 rounds.',
-        bullets: [
-          'Compile Latency: In-browser WebAssembly compilation measured at p50 358ms versus p50 ~2.9s for the server-side Docker build — about 88% faster.',
-          'Zero Round-Trips: WASM PreTeXt/XML rendering happens entirely client-side, with no bytes sent to the server during a render.',
-          'Real-Time Collaboration: Y.js CRDT edits sync at roughly 0.43ms average (p50 0.29ms, p95 1.19ms) one-way over localhost.',
-          'Sandboxed Builds: Heavy pdflatex jobs run in Docker containers capped at 512MB RAM and 64 PIDs, dispatched through a BullMQ/Redis queue with output streamed over Server-Sent Events.'
-        ]
-      }
-    },
-    {
-      id: 'fernos',
-      title: 'ARIA Disaster Pathfinder',
-      label: 'Distributed Systems',
-      desc: 'A resilient crisis command platform. Models urban infrastructure as a spatial PostGIS graph and computes safest paths to affected sectors by penalizing hazard decay rates.',
-      bullets: [
-        'Integrated custom Dijkstra weights scaled by exponential decay offsets exp(-1.5t).',
-        'Implemented real-time Socket.io responder updates triggered by telemetry listeners.',
-        'Maintained graph uptime via asynchronous ML workers decoupling graph search from telemetry ingestion.'
-      ],
-      tags: ['TypeScript', 'PostGIS', 'Socket.io'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/ARIA', primary: true }
-      ],
-      simulator: <FernOSSim />,
-      categories: ['systems', 'web'],
-      benchmarkDetails: {
-        tool: 'pgTap spatial regression suite & Node.js Pathfinder runner',
-        command: 'npm run test:benchmark -- --nodes=50000 --edges=120000',
-        methodology: 'Evaluated Dijkstra safe-path routing on PostGIS graphs scaled by exponential decay hazard telemetry ages.',
-        bullets: [
-          'Spatial Decayed Weighting: Dynamic Dijkstra weights scaled using an exponential decay offset exp(-1.5t) based on active hazard telemetry ages.',
-          'Graph Computation Limits: Completed full safe-path searches on a 50,000-edge urban grid in roughly 8 milliseconds in local benchmarks.',
-          'Decoupled Workers: Decoupled telemetry write listeners (ingesting 2,000 updates/sec) from the path-finding computation worker via Socket.io channels, preventing UI thread blocking.'
-        ]
-      }
-    },
-    {
-      id: 'gateway',
-      title: 'Production API Gateway',
-      label: 'Distributed Systems & Web',
-      desc: 'A production-grade Node.js gateway with distributed tracing, SLO metrics, chaos engineering controls, and a custom rate limiter based on an EWMA PID controller model.',
-      bullets: [
-        'Decoupled auth middleware checking edge cache tokens under 0.1ms.',
-        'Built dynamic circuit breakers flipping states to prevent cascading microservice outages.',
-        'Sustained ~25,000 requests/sec in local wrk load testing.'
-      ],
-      tags: ['Node.js', 'Redis Cache', 'Prometheus', 'SLO Testing'],
-      links: [
-        { label: 'Code', href: 'https://github.com/harsharajkumar-273/API-gateway', primary: true }
-      ],
-      simulator: <GatewaySim />,
-      categories: ['web'],
-      benchmarkDetails: {
-        tool: 'wrk HTTP benchmarking tool',
-        command: 'wrk -t12 -c400 -d30s http://localhost:8080/api/v1/auth',
-        methodology: 'Conducted loopback load testing to determine maximum request threshold before latency degradation.',
-        bullets: [
-          'Auth Caching: Implemented lightweight token verification cache in Redis, reducing auth check middleware execution to under 0.1ms.',
-          'Cascading Outage Mitigation: Configured sliding-window Circuit Breakers that automatically trip to serving fallback static payloads when downstream timeouts hit 5%.',
-          'Performance Limits: In local wrk load testing the gateway sustained ~25,000 requests/sec with a stable p99 around 4.5ms, using non-blocking asynchronous I/O. (Single-machine loopback numbers, not production.)'
-        ]
+    const previous = document.activeElement;
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    ref.current?.focus();
+    function keydown(event) {
+      if (event.key === 'Escape') onClose();
+      if (event.key === 'Tab') {
+        const items = ref.current.querySelectorAll('a[href],button');
+        const first = items[0], last = items[items.length - 1];
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
     }
-  ];
+    document.addEventListener('keydown', keydown);
+    return () => { document.body.style.overflow = oldOverflow; document.removeEventListener('keydown', keydown); previous?.focus(); };
+  }, [onClose]);
+  return <div className="modal-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="case-modal" ref={ref} role="dialog" aria-modal="true" aria-labelledby="case-title" tabIndex={-1}>
+      <button className="close-button" onClick={onClose} aria-label="Close case study"><X size={22}/></button>
+      <p className="eyebrow">{project.category}</p><h2 id="case-title">{project.name}</h2><p className="case-intro">{project.intro}</p>
+      <h3>My contribution</h3><p>{project.contribution}</p><h3>Engineering decision</h3><p>{project.decision}</p>
+      <h3>Evidence and limits</h3><ul>{project.details.map(item => <li key={item}>{item}</li>)}</ul>
+      <div className="reproduce"><span>Repository command</span><code>{project.command}</code><small>Follow repository setup instructions first.</small></div>
+      <External className="button primary" href={`${github}/${project.repo}`}>Explore the repository</External>
+    </section>
+  </div>;
+}
 
-  const featuredProjects = projects.filter((p) => p.featured);
-  const otherProjects = projects.filter((p) => !p.featured);
-  const filteredOthers = otherProjects.filter(
-    (p) => activeTab === 'all' || p.categories.includes(activeTab)
-  );
-
-  const selectedProjForModal = projects.find(p => p.id === activeModalProject);
-
-  // Single project card, reused across the Featured and More Projects tiers.
-  const renderCard = (p) => (
-    <div
-      key={p.id}
-      className="glass-card"
-      style={{
-        padding: '1.75rem',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        gap: '1.2rem',
-        borderTop: p.featured ? '3px solid var(--primary)' : '1px solid var(--border)'
-      }}
-    >
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <span style={{
-            fontSize: '0.65rem',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--primary)',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '1px'
-          }}>
-            {p.label}
-          </span>
-          <button
-            onClick={() => openProject(p)}
-            className="btn"
-            style={{
-              padding: '0.25rem 0.75rem',
-              fontSize: '0.65rem',
-              borderColor: 'rgba(79, 70, 229, 0.25)',
-              color: 'var(--primary)',
-              fontFamily: 'var(--font-mono)'
-            }}
-          >
-            {p.simulator ? 'Simulate ⚡' : 'Details →'}
-          </button>
-        </div>
-
-        <h3 className="font-space" style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.6rem' }}>
-          {p.title}
-        </h3>
-
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>
-          {p.desc}
-        </p>
-      </div>
-
-      <div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
-          {p.tags.map((tag) => (
-            <span key={tag} className="tag tag-blue" style={{ fontSize: '0.58rem', padding: '0.22rem 0.55rem' }}>
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          {p.links.map((link, lIdx) => (
-            <a
-              key={lIdx}
-              href={link.href}
-              target="_blank"
-              rel="noreferrer"
-              className={link.primary ? 'btn btn-primary' : 'btn'}
-              style={{
-                textDecoration: 'none',
-                display: 'inline-flex',
-                fontSize: '0.7rem',
-                padding: '0.4rem 0.9rem',
-                flexGrow: 1
-              }}
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar theme={theme} toggleTheme={toggleTheme} />
-      
-      <main style={{ flexGrow: 1, paddingBottom: '6rem' }}>
-        <Hero />
-        
-        <Experience />
-        
-        <Education />
-        
-        {/* Projects Section */}
-        <section id="projects" className="container" style={{ marginTop: '4rem' }}>
-          <div className="kicker" style={{ justifyContent: 'center' }}>Featured Work</div>
-          <h2 className="font-space" style={{
-            fontSize: '2rem',
-            fontWeight: 800,
-            marginBottom: '1rem',
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, var(--text-main) 0%, var(--primary) 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.04em'
-          }}>
-            Projects I'd Point To First
-          </h2>
-          <p style={{
-            textAlign: 'center',
-            color: 'var(--text-muted)',
-            fontSize: '0.95rem',
-            marginBottom: '2.5rem',
-            maxWidth: '640px',
-            margin: '0 auto 2.5rem auto',
-            lineHeight: 1.6
-          }}>
-            My three strongest builds — each with a real README, an architecture diagram, and reproducible benchmarks in the repo. Open one to see the architecture and measured numbers.
-          </p>
-
-          {/* Featured tier */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '1.25rem',
-            marginBottom: '4rem'
-          }}>
-            {featuredProjects.map((p) => renderCard(p))}
-          </div>
-
-          {/* More projects */}
-          <div className="kicker" style={{ justifyContent: 'center' }}>More Projects</div>
-          <h2 className="font-space" style={{
-            fontSize: '1.6rem',
-            fontWeight: 800,
-            marginBottom: '0.5rem',
-            textAlign: 'center',
-            color: 'var(--text-main)',
-            letterSpacing: '-0.03em'
-          }}>
-            The Rest of the Lab
-          </h2>
-          <p style={{
-            textAlign: 'center',
-            color: 'var(--text-muted)',
-            fontSize: '0.9rem',
-            marginBottom: '2rem',
-            maxWidth: '560px',
-            margin: '0 auto 2rem auto',
-            lineHeight: 1.6
-          }}>
-            More systems and platform experiments. Filter by domain, then launch an interactive simulator or open the details.
-          </p>
-
-          {/* Tab Navigation - IDE Tab bar style with WAI-ARIA tablist accessibility */}
-          <div
-            role="tablist"
-            aria-label="Project Categories"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '2px',
-              marginBottom: '2.5rem',
-              borderBottom: '1px solid var(--border)',
-              paddingBottom: 0
-            }}
-          >
-            {[
-              { id: 'all', label: 'projects.json', iconColor: 'var(--accent-purple)' },
-              { id: 'systems', label: 'systems.cpp', iconColor: 'var(--primary)' },
-              { id: 'web', label: 'platforms.ts', iconColor: 'var(--secondary)' }
-            ].map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-controls="projects-grid"
-                  id={`tab-${tab.id}`}
-                  className="font-mono"
-                  style={{
-                    padding: '0.6rem 1.2rem',
-                    borderRadius: '6px 6px 0 0',
-                    border: '1px solid var(--border)',
-                    borderBottom: isActive ? '2px solid var(--primary)' : '1px solid transparent',
-                    background: isActive ? 'var(--bg-card)' : 'transparent',
-                    color: isActive ? 'var(--text-main)' : 'var(--text-muted)',
-                    cursor: 'pointer',
-                    fontSize: '0.72rem',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    transition: 'all 0.15s ease',
-                    marginBottom: '-1px',
-                    zIndex: isActive ? 2 : 1
-                  }}
-                >
-                  <span style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    background: tab.iconColor
-                  }} />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Secondary grid - WAI-ARIA tabpanel */}
-          <div
-            id="projects-grid"
-            role="tabpanel"
-            aria-labelledby={`tab-${activeTab}`}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1.25rem'
-            }}
-          >
-            {filteredOthers.map((p) => renderCard(p))}
-          </div>
-        </section>
-        
-        <Certifications />
-        
-        <Publications />
-        
-        <Skills />
-      </main>
-
-      {/* Glassmorphic Modal Overlay for Simulators - HCI backdrop click & WAI-ARIA role dialog */}
-      {selectedProjForModal && (
-        <div 
-          onClick={() => setActiveModalProject(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(9, 9, 11, 0.65)', // Zinc-950 transparent backdrop
-            backdropFilter: 'blur(12px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '1.5rem',
-            cursor: 'pointer' // Clicks outer space to dismiss
-          }}
-        >
-          <div 
-            className="glass-card" 
-            onClick={(e) => e.stopPropagation()} // Stop event bubbling to protect clicks inside card
-            style={{
-              maxWidth: '850px',
-              width: '100%',
-              padding: '2.5rem',
-              position: 'relative',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              cursor: 'default'
-            }}
-          >
-            <button 
-              onClick={() => setActiveModalProject(null)}
-              className="btn" 
-              aria-label="Close simulator modal"
-              style={{ 
-                position: 'absolute', 
-                top: '1rem', 
-                right: '1rem', 
-                padding: '0.4rem 0.8rem', 
-                fontSize: '0.75rem',
-                fontFamily: 'var(--font-mono)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-            >
-              Close <span className="keycap" style={{ padding: '0.1rem 0.25rem', fontSize: '0.55rem', borderBottomWidth: '1px' }}>Esc</span>
-            </button>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
-              <span style={{ 
-                fontSize: '0.7rem', 
-                fontFamily: 'var(--font-mono)', 
-                color: 'var(--primary)', 
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}>
-                {selectedProjForModal.label}{selectedProjForModal.simulator ? ' Sandbox' : ''}
-              </span>
-              <h3 id="modal-title" className="font-space" style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
-                {selectedProjForModal.title}
-              </h3>
-            </div>
-
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.7, marginBottom: '1.2rem' }}>
-              {selectedProjForModal.desc}
-            </p>
-
-            <ul style={{
-              color: 'var(--text-muted)',
-              fontSize: '0.9rem',
-              listStyleType: 'none',
-              paddingLeft: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.4rem',
-              marginBottom: '2rem'
-            }}>
-              {selectedProjForModal.bullets.map((b, bIdx) => (
-                <li key={bIdx} style={{ position: 'relative', paddingLeft: '1.25rem' }}>
-                  <span style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: '0.55rem',
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    background: 'var(--primary)',
-                    display: 'inline-block'
-                  }} />
-                  {b}
-                </li>
-              ))}
-            </ul>
-
-            {/* Modal Tabs */}
-            <div style={{
-              display: 'flex',
-              gap: '0.5rem',
-              borderBottom: '1px solid var(--border)',
-              marginBottom: '1.5rem',
-              paddingBottom: 0
-            }}>
-              {selectedProjForModal.simulator && (
-                <button
-                  onClick={() => setModalTab('sandbox')}
-                  role="tab"
-                  aria-selected={modalTab === 'sandbox'}
-                  className="font-mono"
-                  style={{
-                    padding: '0.5rem 1rem',
-                    border: 'none',
-                    background: 'transparent',
-                    borderBottom: modalTab === 'sandbox' ? '2px solid var(--primary)' : '2px solid transparent',
-                    color: modalTab === 'sandbox' ? 'var(--text-main)' : 'var(--text-muted)',
-                    cursor: 'pointer',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  ⚡ Interactive Sandbox
-                </button>
-              )}
-              <button
-                onClick={() => setModalTab('benchmark')}
-                role="tab"
-                aria-selected={modalTab === 'benchmark'}
-                className="font-mono"
-                style={{
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  background: 'transparent',
-                  borderBottom: modalTab === 'benchmark' ? '2px solid var(--primary)' : '2px solid transparent',
-                  color: modalTab === 'benchmark' ? 'var(--text-main)' : 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                📊 Benchmark & Architecture Details
-              </button>
-            </div>
-
-            <div style={{ marginTop: '1.5rem' }}>
-              {modalTab === 'sandbox' ? (
-                selectedProjForModal.simulator
-              ) : (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.25rem',
-                  fontSize: '0.88rem',
-                  lineHeight: 1.6
-                }}>
-                  <div style={{
-                    background: '#09090b',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.75rem',
-                    color: 'var(--text-main)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem'
-                  }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', color: 'var(--primary)' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>[tool]</span>
-                      <span>{selectedProjForModal.benchmarkDetails.tool}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', color: 'var(--accent-gold)' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>[cmd]</span>
-                      <span>{selectedProjForModal.benchmarkDetails.command}</span>
-                    </div>
-                  </div>
-
-                  <p style={{ color: 'var(--text-main)', fontWeight: 500, margin: 0 }}>
-                    Methodology: <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{selectedProjForModal.benchmarkDetails.methodology}</span>
-                  </p>
-
-                  <ul style={{
-                    color: 'var(--text-muted)',
-                    listStyleType: 'none',
-                    paddingLeft: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.8rem',
-                    marginTop: '0.5rem'
-                  }}>
-                    {selectedProjForModal.benchmarkDetails.bullets.map((b, bIdx) => {
-                      const parts = b.split(':');
-                      const title = parts[0];
-                      const content = parts.slice(1).join(':');
-                      return (
-                        <li key={bIdx} style={{ position: 'relative', paddingLeft: '1.25rem' }}>
-                          <span style={{
-                            position: 'absolute',
-                            left: 0,
-                            top: '0.55rem',
-                            width: '5px',
-                            height: '5px',
-                            borderRadius: '50%',
-                            background: 'var(--primary)',
-                            display: 'inline-block'
-                          }} />
-                          <strong style={{ color: 'var(--text-main)' }}>{title}:</strong>{content}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <footer style={{
-        background: 'var(--bg-dark)',
-        borderTop: '1px solid var(--border)',
-        padding: '2.5rem',
-        textAlign: 'center',
-        fontSize: '0.8rem',
-        color: 'var(--text-muted)',
-        fontFamily: 'var(--font-space)'
-      }}>
-        © {new Date().getFullYear()} Harsha Raj Kumar · Nashville, TN · Built with React & Vite.
-      </footer>
-      <TerminalDrawer />
-    </div>
-  );
+export default function App() {
+  const [selected, setSelected] = useState(null);
+  return <>
+    <a className="skip-link" href="#main">Skip to content</a>
+    <header className="site-header"><a className="wordmark" href="#about">HAR<span>SHA.</span></a><nav aria-label="Main navigation"><a href="#work">Work</a><a href="#experience">Experience</a><a href="#open-source">Open source</a><a className="nav-contact" href="mailto:harsha.raj.kumar@vanderbilt.edu">Let’s talk <ArrowUpRight size={15}/></a></nav></header>
+    <main id="main">
+      <section className="hero wrap" id="about">
+        <div className="hero-main"><div className="availability"><span/>Seeking 2027 new-grad roles</div><h1>Harsha Raj Kumar<span>Software Developer.</span></h1><p className="hero-description">I build event-driven services and developer tools, and maintain a collaborative C++ storage-engine project. MS Computer Science at Vanderbilt, graduating April 2027.</p><div className="hero-actions"><a className="button primary" href="#work">Explore my work <ArrowRight size={17}/></a><a className="button secondary" href="/Harsha%20Raj%20Kumar%20CV.pdf" target="_blank" rel="noreferrer"><FileText size={16}/>Resume</a><External className="icon-link" href={github}><Code2 size={19}/>GitHub</External></div></div>
+        <aside className="hero-aside"><div className="aside-label">A CONTRIBUTION IN THE WILD</div><div className="upstream-symbol"><GitPullRequest size={35}/><span>PyTorch</span></div><h2>A small fix. <br/>In upstream core.</h2><p>Input validation and regression tests for a zero-dimension edge case in <code>torch.unravel_index</code>.</p><External href={upstream}>Read the accepted change</External><div className="aside-foot"><Check size={14}/>Accepted after maintainer review</div></aside>
+      </section>
+      <section className="work-section wrap" id="work"><div className="section-heading"><div><p className="eyebrow">SELECTED WORK</p><h2>Built to be understood.</h2></div><p>Three projects. The systems behind them,<br className="desktop-break"/> and the decisions I can explain.</p></div>
+        {projects.map(project => <article className={`project project-${project.id}`} key={project.id}><div className="project-copy"><div className="project-kicker"><span>{project.number}</span>{project.category}</div><h3>{project.name}</h3><p className="project-intro">{project.intro}</p><p className="project-description">{project.description}</p><div className="stack">{project.stack.map(tag => <span key={tag}>{tag}</span>)}</div><div className="ownership"><strong>My contribution</strong><p>{project.contribution}</p></div><div className="project-links"><button onClick={() => setSelected(project)}>Read the case study <ArrowRight size={16}/></button><External href={`${github}/${project.repo}`}>Source <Code2 size={15}/></External></div></div><div className="project-visual"><Architecture project={project}/><div className="evidence-strip"><div><span>{project.evidence}</span><strong>{project.result}</strong></div><p>{project.unit}</p></div></div></article>)}
+        <div className="secondary-work"><article><p className="eyebrow">PROJECT LEAD & MAINTAINER</p><h3>LSM-Tree <span>C++</span></h3><p>Architecture documentation, review, and integration for a collaborative storage engine. Contributors implemented the SkipList, WAL, and compaction internals.</p><External href={`${github}/lsm_tree/issues/14`}>A concrete WAL design review</External></article><article><p className="eyebrow">EXPERIMENT / COMPUTER VISION</p><h3>Pixel Guard <span>Python · OpenCV</span></h3><p>A local inspection prototype that uses image measurements to choose its next action and saves a trace. Synthetic scenes and deterministic policy; real-world accuracy is not established.</p><External href={`${github}/pixel-gaurd`}>Explore the prototype</External></article></div>
+      </section>
+      <section className="experience-section wrap" id="experience"><div className="section-heading"><div><p className="eyebrow">EXPERIENCE</p><h2>Where I’ve contributed.</h2></div><p>Backend work, research software,<br className="desktop-break"/> and tools for technical authors.</p></div><div className="experience-list">
+        <article><div className="role-date">AUG 2026 - PRESENT<span>Vanderbilt University</span></div><div><h3>Software Engineer <span>Backend & Platform Systems</span></h3><h4>Amplify GenAI Innovation Center</h4><p>Developed FastAPI/Redis REST and streaming APIs for Majik, added PostgreSQL/pgvector retrieval, and investigated save, delete, and sharing defects in Amplify’s interface.</p></div></article>
+        <article><div className="role-date">OCT 2025 - AUG 2026<span>Vanderbilt University</span></div><div><h3>Systems & Software Engineer <span>Research Assistant</span></h3><h4>VU-BEAM Lab</h4><p>Implemented contrastive pretraining and supervised fine-tuning in ReCL, with PyTorch data loading and augmentation for ultrasound research.</p></div></article>
+        <article><div className="role-date">SEP 2025 - MAY 2026<span>Vanderbilt University</span></div><div><h3>Software Engineer</h3><h4>Mathematics Department</h4><p>Developed the Proofdesk editor with React/Monaco and Node/Express. Continued the open-source project after the appointment, including later browser-preview integrations.</p></div></article>
+      </div></section>
+      <section className="open-section" id="open-source"><div className="wrap open-grid"><div><p className="eyebrow">OPEN SOURCE</p><h2>Building includes<br/>reviewing and maintaining.</h2><p>Implementation is one kind of contribution. Design review, integration, and giving other contributors clear credit are part of the work too.</p></div><div className="contribution-list"><External href={upstream}><span><small>PYTORCH / ACCEPTED FIX</small><strong>Input validation & regression tests</strong><p>Zero-size shape handling in torch.unravel_index. The contribution acknowledges AI assistance and maintainer co-authorship.</p></span></External><External href={`${github}/lsm_tree/issues/14`}><span><small>LSM-TREE / MAINTAINERSHIP</small><strong>WAL append ordering</strong><p>Reviewed explicit append offsets and requested ordering and recovery regression tests.</p></span></External></div></div></section>
+      <section className="background-section wrap"><div><p className="eyebrow">EDUCATION</p><h3>Vanderbilt University</h3><p>MS Computer Science · Expected Apr 2027<br/>GPA 3.6/4.0</p><h3>VIT Chennai</h3><p>B.Tech Computer Science · May 2025<br/>GPA 3.5/4.0</p></div><div><p className="eyebrow">TOOLKIT</p><p className="toolkit">TypeScript / JavaScript · Python · C++ · Java · Go · SQL</p><p>Node / Express · FastAPI · Kafka / Redpanda · PostgreSQL · Redis · Docker · GitHub Actions · Prometheus · React · PyTorch</p></div><div><p className="eyebrow">PUBLICATION & CREDENTIALS</p><External href="https://ieeexplore.ieee.org/abstract/document/11399172">IEEE CICT 2025 co-author</External><p>GCN, GAT, and autoencoder approaches to Industrial IoT anomaly detection.</p><p>AWS Certified AI Practitioner<br/>Microsoft Azure AI Fundamentals</p></div></section>
+      <footer className="wrap"><div><p className="eyebrow">LET’S CONNECT</p><h2>Hiring a software developer<br/>graduating in 2027?</h2><a className="contact-email" href="mailto:harsha.raj.kumar@vanderbilt.edu">harsha.raj.kumar@vanderbilt.edu <ArrowUpRight size={21}/></a></div><div className="footer-links"><External href={github}>GitHub</External><External href="https://linkedin.com/in/harsharajkumar273">LinkedIn</External><span>Nashville, TN · Open to relocation</span></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Harsha Raj Kumar</span><a href="#about">Back to top ↑</a></div></footer>
+    </main>{selected && <CaseStudy project={selected} onClose={() => setSelected(null)}/>}
+  </>;
 }
