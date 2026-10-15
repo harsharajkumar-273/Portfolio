@@ -103,6 +103,11 @@ export default function App() {
     if (!('IntersectionObserver' in window)) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const cleanups = [];
+    const anchorFrame = requestAnimationFrame(() => {
+      const target = document.getElementById(window.location.hash.slice(1));
+      target?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
+    cleanups.push(() => cancelAnimationFrame(anchorFrame));
     if (!reduce) {
       const revealEls = document.querySelectorAll('.project, .secondary-work > article, .experience-list > article, .open-grid, .background-section > div, footer > div');
       revealEls.forEach(el => el.classList.add('reveal'));
