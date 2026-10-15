@@ -134,9 +134,9 @@ export default function App() {
       const spy = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            navLinks.forEach(a => a.classList.remove('active'));
+            navLinks.forEach(a => { a.classList.remove('active'); a.removeAttribute('aria-current'); });
             const link = navLinks.get(entry.target.id);
-            if (link) link.classList.add('active');
+            if (link) { link.classList.add('active'); link.setAttribute('aria-current', 'location'); }
           }
         });
       }, { rootMargin: '-45% 0px -50% 0px' });
