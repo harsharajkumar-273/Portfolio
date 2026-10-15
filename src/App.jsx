@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { CodeGraphDemo, ProofdeskDemo, PulseStreamDemo } from './demos/InteractiveDemos';
 import { ArrowUpRight, ArrowRight, Code2, FileText, X, GitPullRequest } from 'lucide-react';
 
 const github = 'https://github.com/harsharajkumar-273';
@@ -44,26 +45,10 @@ function External({ href, children, className = '' }) {
   return <a className={className} href={href} target="_blank" rel="noreferrer">{children}<ArrowUpRight size={16} aria-hidden="true" /></a>;
 }
 
-function CodeGraphDemo() {
-  const [active, setActive] = useState('dispatch_request');
-  const symbols = [
-    { name: 'dispatch_request', kind: 'Changed symbol', note: 'Request dispatch in flask/app.py. The recorded CLI example starts change-impact traversal here.' },
-    { name: 'full_dispatch_request', kind: 'Resolved dependent', note: 'Appears at distance 1 in the recorded change-impact result.' },
-    { name: 'wsgi_app', kind: 'Resolved dependent', note: 'Appears at distance 2 in the recorded change-impact result.' },
-    { name: '__call__', kind: 'Resolved dependent', note: 'Appears at distance 3 in the recorded change-impact result.' },
-  ];
-  const selected = symbols.find(symbol => symbol.name === active);
-  return <div className="code-demo">
-    <div className="demo-top"><span className="terminal-dots" aria-hidden="true"><i/><i/><i/></span><span>codegraph / flask</span><span>Recorded example</span></div>
-    <div className="demo-command"><span>$</span> codegraph impact --diff --repo flask</div>
-    <div className="symbol-list" aria-label="Explore the recorded change-impact path">{symbols.map((symbol, i) => <button key={symbol.name} aria-pressed={active === symbol.name} onClick={() => setActive(symbol.name)}><span className="symbol-depth">{i === 0 ? 'Δ' : `d${i}`}</span><code>{symbol.name}</code><span className="symbol-state">{i === 0 ? 'changed' : 'resolved'}</span></button>)}</div>
-    <div className="symbol-inspector" role="status"><span>{selected.kind}</span><strong>{selected.name}</strong><p>{selected.note}</p></div>
-    <div className="demo-bottom">Select a symbol to inspect it.<External href={`${github}/CodeGraph#quick-start-from-a-clone-of-this-repo`}>CLI &amp; source</External></div>
-  </div>;
-}
-
 function Visual({ project }) {
   if (project.id === 'codegraph') return <CodeGraphDemo/>;
+  if (project.id === 'proof') return <ProofdeskDemo/>;
+  if (project.id === 'pulse') return <PulseStreamDemo/>;
   const shot = project.screenshot;
   if (shot) {
     const src = `${import.meta.env.BASE_URL}${shot.src}`;

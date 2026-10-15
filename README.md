@@ -11,7 +11,7 @@ Portfolio URL: https://hashadev.duckdns.org/ (publishing the current local revis
 - CodeGraph: published dependency/call-graph and change-impact CLI.
 - Additional links: collaborative LSM-tree maintenance, Satya, Engram, and a merged PyTorch contribution.
 
-The homepage leads with a real Proofdesk screenshot and compact links to two merged PyTorch contributions. Project case studies identify personal contributions, engineering decisions, evidence, and limitations. CodeGraph includes an interactive, explicitly recorded CLI example; it does not run analysis in the browser. Local benchmark results are not presented as production capacity.
+The homepage leads with a real Proofdesk screenshot and compact links to two merged PyTorch contributions. Project case studies identify personal contributions, engineering decisions, evidence, and limitations. The project section contains three hands-on demos: a small XML authoring preview; a clearly labeled browser-state pipeline model; and real CodeGraph impact traversal on a hand-authored sample graph. CodeGraph core/analysis code is vendored with its MIT license and source commit in `src/demos/codegraph/`. No full repository indexing, Kafka broker, PostgreSQL service, or collaborative Proofdesk backend runs inside these demos. Local benchmark results are not presented as production capacity.
 
 ## Development
 
