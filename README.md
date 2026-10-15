@@ -1,49 +1,30 @@
-# 💼 SDE & Systems Engineering Portfolio
+# Harsha Raj Kumar — Software Engineering Portfolio
 
-A high-performance, minimalist software engineering portfolio showcasing core distributed systems, database storage engines, and backend proxy architectures. Designed with a clean Option B light-theme layout inspired by premium tech companies like Stripe and Vercel.
+React/Vite portfolio presenting selected software projects, Vanderbilt experience, and open-source contributions.
 
-Live Deployment: **[harsharajkumar-273.github.io/SDE-Portfolio/](https://harsharajkumar-273.github.io/SDE-Portfolio/)**
+Portfolio URL: https://hashadev.duckdns.org/ (publishing the current local revision requires GitHub access).
 
----
+## Selected work
 
-## 🚀 Key Features
+- PulseStream: telemetry ingestion, PostgreSQL persistence, and API-level failure testing.
+- Proofdesk: collaborative textbook authoring, browser previews, and queued builds; includes a live-app link.
+- CodeGraph: published dependency/call-graph and change-impact CLI.
+- Additional links: collaborative LSM-tree maintenance, Satya, Engram, and a merged PyTorch contribution.
 
-*   **Clean Light Theme**: Responsive stylesheet optimized for readability, with soft slate grids and glowing hover card shadows.
-*   **Active Seeking Badge**: Green pulsing dot showing availability: `🟢 Actively seeking Full-Time SDE Roles (Summer/Fall 2027)`.
-*   **Systems Simulators**: Dynamic, interactive React widgets embedded directly in modal overlays so recruiters can simulate system loads without leaving the page.
-*   **SDE-Focused Showcase**: Features 5 flagship systems projects:
-    1.  **LSM-Tree Key-Value Engine (C++)**: Asynchronous `io_uring` direct I/O WAL, Arena SkipList MemTable, and block Bloom filters.
-    2.  **Repost-Radar Deduplicator (C++)**: AVX2 SIMD vectorized locality-sensitive hashing (LSH) for high-frequency stream filtering.
-    3.  **PulseStream Metrics Ingestion (TypeScript)**: Redpanda broker pipeline with Redis edge deduplication locks.
-    4.  **ARIA Crisis Pathfinder (TypeScript)**: Spatial PostGIS routing graph running modified decay Dijkstra paths.
-    5.  **Production API Gateway (Node.js)**: SLO error-budget monitor, rate limiting, and Circuit Breakers.
+Project case studies identify personal contributions, engineering decisions, evidence, and limitations. Local benchmark results are not presented as production capacity.
 
----
+## Development
 
-## 🛠️ Tech Stack & Utilities
-
-*   **Frontend Core**: React 18, Vite, Vanilla CSS
-*   **Icons & Assets**: Lucide-React
-*   **Build Optimization**: Custom subpath asset resolution (`base: '/SDE-Portfolio/'`) in `vite.config.js`
-*   **CI/CD Pipeline**: GitHub Actions (`.github/workflows/deploy.yml`) compiling and deploying production bundles to `gh-pages` branch automatically on every push.
-
----
-
-## 📦 Local Installation & Development
-
-```bash
-# Clone the repository
-git clone https://github.com/harsharajkumar-273/SDE-Portfolio.git
-cd SDE-Portfolio
-
-# Install dependencies
-npm install
-
-# Start local development server
+```sh
+npm ci
 npm run dev
+npm run build
 ```
 
----
+Source: `src/App.jsx` and `src/index.css`. Static assets: `public/`. Production build: `dist/`.
 
-## 📜 License
-Distributed under the MIT License. See `LICENSE` for details.
+## Deployment
+
+The existing GitHub Actions workflow builds pushes to main and publishes the build to GitHub Pages with the configured custom domain. Preserve the workflow and domain when deploying. The current résumé download is `public/Harsha-Raj-Kumar-Resume.pdf`.
+
+GitHub repository: https://github.com/harsharajkumar-273/Portfolio

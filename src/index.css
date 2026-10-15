@@ -7,3 +7,10 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.22,.61,.36,1),transform .6s cubic-bezier(.22,.61,.36,1)}.reveal.in-view{opacity:1;transform:none}.project.reveal{transition-delay:.04s}nav a{transition:color .2s ease}nav a.active{color:var(--green)}.site-header nav a.active::after{content:'';position:absolute;left:0;right:0;bottom:-7px;height:2px;background:var(--green);border-radius:2px}.site-header nav a{position:relative}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important;transition:none!important}}
+
+/* Compact evidence and wrapping actions keep the selected work near the hero. */
+.hero-aside{padding:22px}.upstream-symbol{margin:15px 0 12px}.hero-aside h2{font-size:23px}.aside-foot{margin-top:15px;padding-top:12px}
+.project-links,.case-actions,.experience-evidence,.more-links{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center}
+.case-actions{margin-top:18px}.experience-evidence{margin-top:12px;font-size:12px;font-weight:600;color:var(--green)}.experience-evidence a,.more-links a{display:inline-flex;gap:6px;align-items:center}
+.project-codegraph .project-visual{background:#edf0f6}
+@media(max-width:650px){.hero-aside{padding:18px}.hero-aside p{margin:9px 0 12px}.upstream-symbol{margin:12px 0 9px}.project-links{gap:13px 18px}}
