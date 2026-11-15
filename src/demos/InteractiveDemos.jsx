@@ -42,7 +42,7 @@ export function ProofdeskDemo() {
       {error && <p className="demo-error" role="alert">{error} The last valid preview is below.</p>}
       <div className="book-sample" aria-live="polite" aria-label={`Rendered textbook sample, preview ${renderCount}`}>{rendered}</div>
     </div>
-    <p className="try-foot">A small XML preview, not the full Pyodide compiler. The benchmark below is from the full app.</p>
+    <p className="try-foot">This demo renders a small XML sample in the browser.</p>
   </div>;
 }
 
@@ -64,8 +64,8 @@ export function PulseStreamDemo() {
       return { ...s, queue, persisted: s.persisted + 1, log: log(s, `COMMIT · event-${id} persisted; offset advanced.`) };
     });
   }
-  return <div className="try-demo pulse-demo">
-    <div className="try-header"><strong>Try the pipeline</strong><span>Interactive model</span></div>
+  return <div className="try-demo pulse-demo" id="pulse-demo" role="region" aria-labelledby="pulse-demo-title" tabIndex={-1}>
+    <div className="try-header"><strong id="pulse-demo-title">PulseStream pipeline</strong><span>Interactive model</span></div>
     <div className="try-body"><p className="try-instruction">Send events, retry one, then process the queue. Pause the consumer to see a backlog build.</p>
       <div className="pipeline-stats" aria-live="polite"><div><span>API accepted</span><strong>{state.accepted}</strong></div><span aria-hidden="true">→</span><div><span>Queued</span><strong>{state.queue.length}</strong></div><span aria-hidden="true">→</span><div><span>Persisted</span><strong>{state.persisted}</strong></div></div>
       <div className="try-actions"><button className="demo-primary" onClick={() => send()}>Send event</button><button onClick={() => send(true)} disabled={state.last === null}>Retry last</button><button onClick={consume} disabled={state.paused || !state.queue.length}>Process next</button></div>
