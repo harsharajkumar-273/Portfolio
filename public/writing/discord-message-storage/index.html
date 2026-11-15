@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A look at Discord’s hot partitions, request coalescing, ScyllaDB migration, and read-after-write consistency.">
+  <title>Why Discord Coalesced Reads Before Moving to ScyllaDB | Harsha Raj Kumar</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <style>
+    body{margin:0;background:#fafbf8;color:#192e27;font:17px/1.7 system-ui,sans-serif}
+    main{max-width:690px;margin:auto;padding:36px 22px 60px}
+    h1,h2,h3{line-height:1.18;letter-spacing:-.035em}
+    h1{font-size:clamp(34px,6vw,55px);margin:.35em 0 .5em}
+    h2{font-size:25px;margin-top:1.65em}
+    h3{font-size:19px;margin:1.35em 0 .35em}
+    h3+p{margin-top:0}
+    a{color:#245b45;text-underline-offset:3px}
+    .category{color:#245b45;font-weight:650;font-size:14px;margin:34px 0 0}
+    .byline{color:#56665e;font-size:15px;margin-bottom:24px}
+    pre{overflow:auto;padding:15px 17px;background:#edf1e7;border:1px solid #dce3db;border-radius:6px;font-size:14px;line-height:1.6}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;vertical-align:top;padding:9px;border-bottom:1px solid #dce3db}
+    .packet-diagram{margin:22px 0 30px}
+    .packet-diagram pre{margin-bottom:8px}
+    .packet-diagram figcaption{font-size:14px;color:#56665e}
+    :focus-visible{outline:3px solid #b66e2d;outline-offset:4px}
+  </style>
+</head>
+<body>
+<main>
+  <a href="../../#writing">← Back to Writing</a>
+  <article>
+    <p class="category">Industry-Grade Systems · Discord Engineering</p>
+    <h1>Why Discord Coalesced Reads Before Moving to ScyllaDB</h1>
+    <p><em>What happens if I reload after sending a message and join a read that started before my write?</em></p>
+    <p class="byline">Written by Harsha Raj Kumar</p>
+    <p>A big Discord server sends an <code>@everyone</code> announcement. Thousands of people open the channel. Many are asking for the same message, and without something to combine those requests, the database has to answer them separately.</p>
+    <p>I expected Discord’s story to be mainly about Cassandra’s disk reads and garbage collection. Both showed up in the engineering post. I was more interested in how Discord reduced the work reaching the database, and what sharing a read might mean for someone who just sent a message. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord Engineering’s original write-up</a></p>
+
+    <h2>What my first model missed about hot partitions</h2>
+    <p>Discord moved from MongoDB to Cassandra in its earlier messaging architecture. Its Cassandra message cluster grew from 12 nodes in 2017 to 177 by early 2022. Messages were partitioned by <code>(channel_id, bucket)</code>, where a bucket was a fixed time window. Within a partition, the Snowflake message ID provided a sortable key. I first imagined splitting a channel after a fixed number of messages. A time window gives the application a predictable way to locate a partition, though a busy channel can still produce a large bucket.</p>
+    <p>Partition size and partition heat are two different problems. Even a small current bucket can be hot when everyone wants its latest messages. Adding nodes can spread different partitions across the cluster. Reads for one partition still land on the replicas holding it. Those replicas also serve other partitions, so one channel can slow down unrelated queries. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord’s schema and Cassandra bottlenecks</a></p>
+
+    <h2>Why the same read became expensive under load</h2>
+    <pre><code>Write: mutation → commit log and memtable → eventual SSTable flush
+Read:  lookup   → memtable and relevant SSTables → reconcile results</code></pre>
+    <p>On the write path, Cassandra records the mutation in a commit log and updates a memtable. Reads may have to look in memory and across several SSTables on disk. When compaction falls behind, more files may need to be considered. Compaction itself also consumes resources that foreground queries need.</p>
+    <p>Discord described taking nodes out of rotation to let them compact, then bringing them back to catch up through hinted handoff. JVM pauses added another source of tail latency. My initial storage-engine explanation covered individual read cost. It missed how more concurrent requests could amplify that cost on the same replica nodes. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord’s account of compaction and JVM pauses</a></p>
+
+    <h2>Why consistent hashing mattered for coalescing</h2>
+    <p>Discord introduced a Rust data service between its API and database. The first request for a row starts a database query. While it’s in flight, other callers asking for the same row can subscribe to the result.</p>
+    <pre><code>Same channel → same data-service instance
+                           │
+             Same row, overlapping reads
+                           │
+                  One database query
+                           │
+                  Result to all callers</code></pre>
+    <p>There’s a reason to route by channel ID first. If identical reads land on separate service instances, each instance can start its own query. Consistent hashing makes it more likely that requests for the same row meet in one place. The channel is the routing key. The particular row being fetched is what makes two requests eligible to share a query. Reads for different rows still require work.</p>
+    <p>That’s the difference I noticed compared with <a href="../twitter-snowflake/index.html">Snowflake IDs</a>. Any healthy Snowflake worker with a distinct identity can issue the next ID. Here, there’s a reason to give requests affinity to an instance: overlapping callers can share work. Discord reported that hot partitions still occurred after adding this layer, though less frequently. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord’s Rust data service and routing design</a></p>
+
+    <h2>The question I wish Discord had answered</h2>
+    <p><strong>How did Discord ensure read-after-write consistency through the data service?</strong> If my send succeeds and I reload immediately, what ensures the reload includes my message?</p>
+    <p>The post says Discord used quorum reads and writes. With three replicas and a quorum of two, a successful write’s acknowledgment set and a subsequent read’s response set must intersect if they use the same replica set. For a completed write followed by a fresh read of the same data, that overlap gives the database a replica that received the write. The blog doesn’t spell out how the application handles a reload that joins an earlier query. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord’s discussion of quorum</a> · <a href="https://cassandra.apache.org/doc/stable/cassandra/managing/operating/read_repair.html">Cassandra’s read-repair documentation</a></p>
+    <p>Here’s the race I’d test. Assume the requested page should include the new message and that both reads are eligible to share work.</p>
+    <pre><code>t1  Reader A starts fetching the page.
+t2  The database read observes the page before the new message.
+t3  The new message is written and acknowledged.
+t4  Reader B reloads and joins A’s still-pending read.
+t5  Both readers receive the earlier result.</code></pre>
+    <p>This is a hypothetical timeline. Discord didn’t give enough implementation detail to tell whether it can occur there. The important bit is that B arrived after the write, while the database read it joined observed data before the write. The fact that the query is still in flight tells me very little about the freshness of its result.</p>
+    <p>If I were building this, I’d first turn the timeline into a test with a controlled pause between the database response and its delivery to subscribers. If the product requires an immediate reload to see the acknowledged write, one option is to bypass reads that began before that acknowledgment on the writer’s next request. I would have liked to see how Discord handled that boundary for sends and edits.</p>
+
+    <h2>What ScyllaDB changed</h2>
+    <p>Coalescing reduced duplicate work. Discord still needed to improve how the storage tier handled the requests that reached it. Discord cited ScyllaDB’s shard-per-core design, faster repairs, and avoiding the JVM garbage collection issues it had seen. Reverse scans were initially a blocker. Discord needed efficient scans opposite the table’s normal order, and the ScyllaDB team improved that path before the move. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord’s database evaluation</a></p>
+
+    <h2>Why the migration stalled at the end</h2>
+    <p>The initial Spark migration estimate was three months. Discord extended its Rust database library to read token ranges, save progress locally in SQLite, and stream records into ScyllaDB. The new estimate was nine days, and Discord reported a peak of up to 3.2 million messages per second.</p>
+    <p>At 99.9999% completion, the remaining Cassandra reads timed out on ranges full of tombstones, which are markers for deleted data. Compacting the affected range let the migration finish. Discord sampled reads against both databases and compared results before switching primary traffic in May 2022. I liked this detail because it shows how the source data can bottleneck even a much faster copy pipeline. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord’s migration account</a></p>
+
+    <h2>What Discord measured afterward</h2>
+    <p>Discord reported going from 177 Cassandra nodes to 72 ScyllaDB nodes. Historical-message read p99 went from 40–125 ms to about 15 ms, and insert p99 went from 5–70 ms to about 5 ms. Discord also showed traffic during the 2022 World Cup final as a real example of bursty load. I’d read these as production observations after the combined changes. The write-up gives no controlled comparison that isolates how much of the improvement came from coalescing, ScyllaDB, or the storage configuration. <a href="https://discord.com/blog/how-discord-stores-trillions-of-messages">Discord’s production results</a></p>
+
+    <h2>My takeaway</h2>
+    <p>I started with a broad question about why Cassandra was slow. I came away asking where requests concentrate, how many are doing the same work, and which results can safely be shared. Time buckets organize history. Channel-based routing puts related requests together. Coalescing lets matching reads share a query. ScyllaDB changes the cost of the work that remains. The question I’d bring into a design review is whether the read a caller joins is fresh enough for what the caller was promised.</p>
+  </article>
+</main>
+</body>
+</html>

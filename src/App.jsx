@@ -178,6 +178,10 @@ function Writing() {
             <span>Why Twitter Built Snowflake IDs</span><ArrowRight size={15} aria-hidden="true" />
           </a>
           <p className="writing-category-note">Twitter Engineering · My take on the original design</p>
+          <a className="writing-post" href={`${import.meta.env.BASE_URL}writing/discord-message-storage/index.html`}>
+            <span>Why Discord Coalesced Reads Before Moving to ScyllaDB</span><ArrowRight size={15} aria-hidden="true" />
+          </a>
+          <p className="writing-category-note">Discord Engineering · My take on message storage</p>
         </section>
         <section className="writing-category">
           <h3>Essentials of System Design</h3>
