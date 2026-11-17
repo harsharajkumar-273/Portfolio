@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How idempotency keys help APIs handle timeouts, double taps, and page reloads.">
+  <title>Safe Retries: What If the Server Already Did It? | Harsha Raj Kumar</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <style>
+    body{margin:0;background:#fafbf8;color:#192e27;font:17px/1.7 system-ui,sans-serif}
+    main{max-width:690px;margin:auto;padding:36px 22px 60px}
+    h1,h2,h3{line-height:1.18;letter-spacing:-.035em}
+    h1{font-size:clamp(34px,6vw,55px);margin:.35em 0 .5em}
+    h2{font-size:25px;margin-top:1.65em}
+    h3{font-size:19px;margin:1.35em 0 .35em}
+    h3+p{margin-top:0}
+    a{color:#245b45;text-underline-offset:3px}
+    .category{color:#245b45;font-weight:650;font-size:14px;margin:34px 0 0}
+    .byline{color:#56665e;font-size:15px;margin-bottom:24px}
+    pre{overflow:auto;padding:15px 17px;background:#edf1e7;border:1px solid #dce3db;border-radius:6px;font-size:14px;line-height:1.6}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;vertical-align:top;padding:9px;border-bottom:1px solid #dce3db}
+    .packet-diagram{margin:22px 0 30px}
+    .packet-diagram pre{margin-bottom:8px}
+    .packet-diagram figcaption{font-size:14px;color:#56665e}
+    :focus-visible{outline:3px solid #b66e2d;outline-offset:4px}
+  </style>
+</head>
+<body>
+<main>
+  <a href="../../#writing">← Back to Writing</a>
+  <article>
+    <p class="category">Essentials of System Design</p>
+    <h1>Safe Retries: What If the Server Already Did It?</h1>
+    <p><em>How idempotency keys help APIs handle timeouts, double taps, and page reloads</em></p>
+    <p class="byline">Written by Harsha Raj Kumar</p>
+    <p>A post has 1,000 likes. I double-tap to like it, but the number stays the same. I try again. This time it jumps to 1,002.</p>
+    <p>I only meant to like the post once. The first request may have worked even though the app never showed me the result. The same problem is more serious at checkout. I click <strong>Pay</strong>, the page times out, and I try again. If the first payment went through, that retry could charge me twice.</p>
+    <p>You’ve probably seen this warning at checkout: <strong>“Please don’t refresh this page while your payment is being processed.”</strong> I used to wonder what refreshing could change. If the payment is already in progress, reloading can leave the browser unsure which attempt to resume. That’s the case I want the API to handle safely.</p>
+    <p>The question I wanted to understand was simple. <strong>How can I retry an operation when I don’t know whether it already happened?</strong></p>
+
+    <h2>A timeout leaves the outcome unknown</h2>
+    <p>A request can time out because it never reached the server, because it’s still running, or because the server finished and the response never came back. All three can look the same on the screen.</p>
+    <pre><code>Client                              Server
+  | ─── POST /payments ───────────────► |
+  |                                    | Payment succeeds
+  |       Response never arrives       |
+  | ─── Retry POST /payments ─────────► |
+  |                                    | Retry or new payment?</code></pre>
+    <p>The second request might have the same amount and recipient. Someone could also intentionally send two $50 payments to the same person. The server needs a way to distinguish two attempts at one payment from two separate payments.</p>
+
+    <h2>What idempotency means here</h2>
+    <p>In mathematics, an operation is idempotent if applying it again has the same effect as applying it once. <code>abs(-5)</code> gives <code>5</code>, and applying <code>abs</code> to <code>5</code> still gives <code>5</code>.</p>
+    <p>For the likes example, compare incrementing a counter with setting my like on the post to true. Repeat the increment and the count goes up again. Repeat the second operation and I still have one like. I’d model the like as a relationship between a user and a post, with a unique constraint on that pair. If I maintain a counter, I’d increment it only when a new like is inserted.</p>
+    <p>HTTP uses the same idea for the intended effect of methods like <code>PUT</code> and <code>DELETE</code>. A repeated <code>DELETE</code> can return <code>404</code> after an initial success while leaving the resource in the same state. A <code>POST /payments</code> needs an explicit retry contract. <a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2">HTTP semantics, RFC 9110</a></p>
+
+    <h2>Give each payment attempt a key</h2>
+    <p>Before sending the payment request, the client generates and saves an <strong>idempotency key</strong> for that attempt. It sends the key with the request and reuses it if it retries the same operation.</p>
+    <pre><code>POST /payments HTTP/1.1
+Host: api.example.com
+Idempotency-Key: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
+Content-Type: application/json
+
+{"checkout_id":"checkout_42","amount":5000,"currency":"usd"}</code></pre>
+    <p>The client sends the operation and key together. The server checks the key while handling that request.</p>
+    <ul>
+      <li><strong>New key.</strong> Atomically claim it and start processing. Two requests can reach different server instances at the same time.</li>
+      <li><strong>Same key, still processing.</strong> Follow the API’s documented behavior. It might return an in-progress response or let the caller check the operation’s status.</li>
+      <li><strong>Same key, completed.</strong> Return the recorded outcome or a reference to the existing payment.</li>
+      <li><strong>Same key, different payment details.</strong> Reject the request. Changing the amount from $50 to $500 should never silently reuse the result of the $50 payment.</li>
+    </ul>
+    <p>I’d scope the lookup to the authenticated account and operation and record the fields that define the payment so the server can recognize a changed request. <a href="https://docs.stripe.com/api/idempotent_requests">Stripe’s idempotency documentation</a></p>
+
+    <p>Stripe’s engineering write-up walks through the same problem from the API designer’s side, including a request that succeeds but loses its response. <a href="https://stripe.com/blog/idempotency">Designing robust and predictable APIs with idempotency</a></p>
+
+    <h2>What if the page reloads or I open another tab?</h2>
+    <p>I initially thought of this as a session problem. If the browser refreshes after a timeout and generates a fresh key, the server can treat the retry as a new payment. Telling the user to stay on the same page would make the design depend on that page surviving the failure.</p>
+    <p>I’d tie the key to the <strong>checkout attempt</strong>. If the app can recover that attempt after a reload, it can recover the same key. A user can make two intentional purchases in one browser session, and one payment attempt can span a reconnect or a new tab.</p>
+    <pre><code>Pay for checkout_42           → key A
+Timeout, reload, retry        → key A
+Resume attempt in another tab → key A
+Start a separate purchase     → key B</code></pre>
+    <p>If two tabs independently create different keys for the same checkout, deduplication by key sees two requests. If the business rule is one successful payment per checkout, I’d enforce that on the server too. The key identifies retries of an attempt. The checkout rule protects the business outcome even when the client mishandles its keys.</p>
+
+    <h2>The crash window a Redis lock can’t close on its own</h2>
+    <pre><code>1. Claim the idempotency key in Redis.
+2. Commit the business operation.
+3. Save the result under that key.
+4. Return the response.</code></pre>
+    <p>Stop the server after step 2. The change has committed, but Redis still says the request is in progress. If the lock expires and a retry takes over, the new worker could perform the operation again. The lock handled concurrent requests while it was held. Recovering the committed outcome requires a durable record.</p>
+    <p>If the change lives entirely in one database, I’d commit the change and its completed idempotency record in the <strong>same transaction</strong>. A retry can then distinguish a transaction that rolled back from one that committed before the response was lost.</p>
+    <p>For an external payment, I’d persist the attempt before calling the provider, reuse a stable provider idempotency key on retries, and reconcile uncertain outcomes against the provider before attempting a new charge. I’d document how long the API remembers keys. A delayed retry can outlive that window, which makes the durable checkout or payment record important. <a href="https://docs.stripe.com/api/idempotent_requests">Stripe’s key retention and retry behavior</a></p>
+
+    <h2>What I’d test</h2>
+    <p>I’d let the operation succeed, drop the response, reload the client, and retry. Then I’d check that there’s still only one business effect. I’d also send two copies concurrently, reuse the key with a changed amount, and crash the worker after the provider succeeds but before the application records the result. In that last case, I’d verify that recovery finds the original payment. A <code>200 OK</code> on the retry tells me very little unless I also check how many payments happened.</p>
+
+    <h2>My takeaway</h2>
+    <p>I started out thinking a retry should stay in the same session. What I’d preserve now is the <strong>same intent</strong>, even if the page or connection changes. The client needs to remember which operation it was trying to complete. The server needs to recognize that operation and recover its outcome across failures.</p>
+    <p><strong>If the operation succeeds and the process dies before telling anyone, what will the next request find?</strong></p>
+  </article>
+</main>
+</body>
+</html>

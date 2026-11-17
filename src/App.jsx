@@ -188,6 +188,9 @@ function Writing() {
           <a className="writing-post" href={`${import.meta.env.BASE_URL}writing/https-with-curl/index.html`}>
             <span>What happens when curl connects to an HTTPS server?</span><ArrowRight size={15} aria-hidden="true" />
           </a>
+          <a className="writing-post" href={`${import.meta.env.BASE_URL}writing/safe-retries/index.html`}>
+            <span>Safe Retries: What If the Server Already Did It?</span><ArrowRight size={15} aria-hidden="true" />
+          </a>
         </section>
       </div>
     </section>
