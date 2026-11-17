@@ -1,30 +1,36 @@
 # Harsha Raj Kumar — Software Engineering Portfolio
 
-React/Vite portfolio presenting selected software projects, Vanderbilt experience, and open-source contributions.
+Single-page React portfolio built with Vite and framer-motion.
 
-Portfolio URL: https://hashadev.duckdns.org/ (publishing the current local revision requires GitHub access).
+Live site: https://hashadev.duckdns.org/
 
-## Selected work
+## What's on the page
 
-- PulseStream: telemetry ingestion, PostgreSQL persistence, and API-level failure testing.
-- Proofdesk: collaborative textbook authoring, browser previews, and queued builds; includes a live-app link.
-- CodeGraph: published dependency/call-graph and change-impact CLI.
-- Additional links: collaborative LSM-tree maintenance, Satya, Engram, and a merged PyTorch contribution.
+- **Hero** with a Proofdesk screenshot and links to GitHub, LinkedIn, Medium, and the résumé.
+- **Highlights** drawn from measured results (PulseStream local run, merged PyTorch fixes).
+- **Projects carousel** with filters (Systems, Developer tools, Hackathons). Flagship projects open a popup with engineering notes and, where available, a hands-on demo:
+  - PulseStream: browser-state model of an ingestion pipeline (clearly labeled as a model).
+  - Proofdesk: small XML authoring preview.
+  - CodeGraph: real impact traversal over a hand-authored sample graph (vendored core under `src/demos/codegraph/`, MIT licensed).
+  - LSM-Tree: engineering notes.
+- **Experience**, **open source**, **writing**, **education and toolkit**, and a contact block.
 
-The homepage leads with a real Proofdesk screenshot and compact links to two merged PyTorch contributions. Project case studies identify personal contributions, engineering decisions, evidence, and limitations. The project section contains three hands-on demos: a small XML authoring preview; a clearly labeled browser-state pipeline model; and real CodeGraph impact traversal on a hand-authored sample graph. CodeGraph core/analysis code is vendored with its MIT license and source commit in `src/demos/codegraph/`. No full repository indexing, Kafka broker, PostgreSQL service, or collaborative Proofdesk backend runs inside these demos. Local benchmark results are not presented as production capacity.
+No Kafka broker, PostgreSQL service, or collaborative Proofdesk backend runs inside the demos. Local benchmark results are not presented as production capacity.
 
 ## Development
 
 ```sh
 npm ci
-npm run dev
-npm run build
+npm run dev       # dev server
+npm run build     # production build in dist/
+npm run preview   # serve the build on :4173
+npm run lint
 ```
 
-Source: `src/App.jsx` and `src/index.css`. Static assets: `public/`. Production build: `dist/`.
+Source lives in `src/App.jsx` (content and components) and `src/index.css` (styles). Static assets, writing pages, and PDFs are in `public/`.
 
 ## Deployment
 
-The existing GitHub Actions workflow builds pushes to main and publishes the build to GitHub Pages with the configured custom domain. Preserve the workflow and domain when deploying. The current résumé download is `public/Harsha-Raj-Kumar-Resume.pdf`.
+A GitHub Actions workflow builds pushes to `main` and publishes `dist/` to GitHub Pages with the custom domain configured in `public/CNAME`. The résumé download is `public/Harsha-Raj-Kumar-Resume.pdf`.
 
-GitHub repository: https://github.com/harsharajkumar-273/Portfolio
+Repository: https://github.com/harsharajkumar-273/Portfolio
