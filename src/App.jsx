@@ -12,6 +12,7 @@ const resume = asset('Harsha-Raj-Kumar-Resume.pdf');
 const github = 'https://github.com/harsharajkumar-273';
 const upstream = 'https://github.com/pytorch/pytorch/pull/200585';
 const coreFix = 'https://github.com/pytorch/pytorch/pull/191092';
+const barrierFix = 'https://github.com/pytorch/pytorch/pull/202783';
 const pulseBenchmark = `${github}/PulseStream#benchmark`;
 const linkedIn = 'https://www.linkedin.com/in/harsharajkumar273/';
 const email = 'harsha.raj.kumar@vanderbilt.edu';
@@ -70,8 +71,8 @@ const projects = [
 ];
 
 const others = [
-  { name: 'Satya', tag: 'verification tool', tags: ['dev'], text: 'Checks UI claims against API or reload-persisted state.', links: [{ href: `${github}/Satya-`, label: 'Source' }] },
-  { name: 'Engram', tag: 'agent prototype', tags: ['dev'], text: 'Explores bounded agent execution and persistent memory.', links: [{ href: `${github}/ENGRAM`, label: 'Source' }] },
+  { name: 'Satya', tag: 'verification tool', tags: ['dev'], text: 'Verifies what a UI claims against what the API or a reload actually persisted — Playwright checks across 8 test suites, run in CI.', links: [{ href: `${github}/Satya-`, label: 'Source' }] },
+  { name: 'Engram', tag: 'agent prototype', tags: ['dev'], text: 'A tool-using agent with bounded execution and full trace logs. Retrieval is benchmarked on a controlled synthetic workload of 1,200 memories; 25+ test files run in CI.', links: [{ href: `${github}/ENGRAM`, label: 'Source' }] },
   { name: 'ARIA', shot: 'aria', tag: 'Vanderbilt Global Good Hackathon 2025 · finalist', tags: ['hack'], text: 'Disaster-response routing prototype that adjusts routes around reported hazards.', links: [{ href: `${github}/ARIA`, label: 'Source' }] },
   { name: 'Checkout Release Recovery', shot: 'checkout-release-recovery', tag: 'GitLab AI Hackathon', tags: ['hack'], text: 'GitLab Duo proposes a fix for a checkout pricing bug; independent regression checks validate it before human review.', links: [{ href: 'https://checkout-release-recovery-16890129443.us-central1.run.app/#challenge', label: 'Demo' }, { href: 'https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43176085/showcase/-/tree/submission-source-2026-10-26', label: 'GitLab' }] },
   { name: 'ProofPay', shot: 'proofpay', tag: 'PayPal AI hackathon', tags: ['hack'], text: 'An agent patches a broken site; independent Playwright checks and buyer-approved rules gate a sandbox payment.', links: [{ href: `${github}/Paypal-AI-hackathon-`, label: 'Source' }] },
@@ -336,7 +337,7 @@ export default function App() {
         <div className="hero-copy">
           <motion.div className="availability" {...fade(0)}><span/>Available for 2027 new-grad roles</motion.div>
           <motion.h1 {...fade(0.08)}>Software engineer focused on systems, performance, and correctness.</motion.h1>
-          <motion.p className="hero-description" {...fade(0.16)}>I’m Harsha Raj Kumar. I write C++, Python, and TypeScript, and I care about measured performance: a Kafka pipeline with load-tested latency, a C++ LSM-tree storage engine, and two merged fixes in PyTorch. I also work at Vanderbilt’s Amplify GenAI Innovation Center.</motion.p>
+          <motion.p className="hero-description" {...fade(0.16)}>I’m Harsha Raj Kumar. I write C++, Python, and TypeScript, and I care about measured performance: a Kafka pipeline with load-tested latency, a C++ LSM-tree storage engine, and three merged fixes in PyTorch. I also work at Vanderbilt’s Amplify GenAI Innovation Center.</motion.p>
           <motion.div className="hero-actions" {...fade(0.24)}>
             <a className="button primary" href="#work">See my work <ArrowRight size={16}/></a>
             <a className="button secondary" href={resume} target="_blank" rel="noreferrer"><FileText size={16}/>Résumé</a>
@@ -354,7 +355,7 @@ export default function App() {
             <img src={asset('screens/proofdesk-editor.webp')} width="1600" height="792" alt="Proofdesk showing collaborative textbook source and its rendered preview" fetchPriority="high"/>
           </a>
           <motion.a className="float-badge" href={upstream} target="_blank" rel="noreferrer" animate={reduce ? undefined : { y: [0, -6, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
-            <GitPullRequest size={18}/><span><strong>PyTorch contributor</strong>Two merged fixes</span>
+            <GitPullRequest size={18}/><span><strong>PyTorch contributor</strong>Three merged fixes</span>
           </motion.a>
           </div>
           <div className="site-links" role="group" aria-label="Profiles and résumé">
@@ -367,7 +368,7 @@ export default function App() {
       </section>
 
       <section className="stats wrap" aria-label="Highlights">
-        <Reveal className="stat"><strong><CountUp to={2}/></strong><span>merged PyTorch fixes (C++ and Python), with regression tests</span></Reveal>
+        <Reveal className="stat"><strong><CountUp to={3}/></strong><span>merged PyTorch fixes (C++ and Python), with regression tests</span></Reveal>
         <Reveal className="stat" delay={0.06}><strong><CountUp to={430}/></strong><span>durable events/s in a local PulseStream run</span></Reveal>
         <Reveal className="stat" delay={0.12}><strong><CountUp to={854}/><small>ms</small></strong><span>p99 from send to durable row in that run</span></Reveal>
         <Reveal className="stat" delay={0.18}><strong><CountUp to={11}/></strong><span>failure scenarios tested through HTTP</span></Reveal>
@@ -398,6 +399,7 @@ export default function App() {
         <SectionHead eyebrow="Open source" title="Contributions upstream">Merged fixes in PyTorch, each with regression tests, plus a storage engine I maintain.</SectionHead>
         <div className="oss-grid">
           {[
+            [barrierFix, 'PYTORCH · DISTRIBUTED C++', 'A barrier that honors async execution', 'Fixed the NCCL barrier deadlock: barrier() ignored the asyncOp flag and could hang distributed training. Landed upstream in November 2026.'],
             [upstream, 'PYTORCH · DISTRIBUTED C++', 'Empty tensors, correct collectives', 'Fixed NCCL2 all_gather misclassifying empty outputs as aliased buffers, with distributed regression tests. Landed upstream in October 2026.'],
             [coreFix, 'PYTORCH · CORE', 'Clear validation for zero-sized dimensions', 'Fixed torch.unravel_index error handling while preserving empty-input behavior; added regression tests.'],
             [`${github}/lsm_tree`, 'LSM-TREE · MAINTAINER', 'Reviewing a storage engine in the open', 'Review contributor work such as WAL append ordering and require recovery regression tests before merge.'],
