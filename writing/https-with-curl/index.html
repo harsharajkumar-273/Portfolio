@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Follow a real curl trace from name resolution through TCP, TLS, and an HTTP response.">
+  <title>What happens when curl connects to an HTTPS server? | Harsha Raj Kumar</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <style>
+    body{margin:0;background:#fafbf8;color:#192e27;font:17px/1.7 system-ui,sans-serif}
+    main{max-width:690px;margin:auto;padding:36px 22px 60px}
+    h1,h2,h3{line-height:1.18;letter-spacing:-.035em}
+    h1{font-size:clamp(34px,6vw,55px);margin:.35em 0 .5em}
+    h2{font-size:25px;margin-top:1.65em}
+    h3{font-size:19px;margin:1.35em 0 .35em}
+    h3+p{margin-top:0}
+    a{color:#245b45;text-underline-offset:3px}
+    .category{color:#245b45;font-weight:650;font-size:14px;margin:34px 0 0}
+    .byline{color:#56665e;font-size:15px;margin-bottom:24px}
+    pre{overflow:auto;padding:15px 17px;background:#edf1e7;border:1px solid #dce3db;border-radius:6px;font-size:14px;line-height:1.6}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;vertical-align:top;padding:9px;border-bottom:1px solid #dce3db}
+    .packet-diagram{margin:22px 0 30px}
+    .packet-diagram pre{margin-bottom:8px}
+    .packet-diagram figcaption{font-size:14px;color:#56665e}
+    :focus-visible{outline:3px solid #b66e2d;outline-offset:4px}
+  </style>
+</head>
+<body>
+<main>
+  <a href="../../#writing">← Back to Writing</a>
+  <article>
+    <p class="category">Essentials of System Design</p>
+    <h1>What happens when <code>curl</code> connects to an HTTPS server?</h1>
+    <p class="byline">Written by Harsha Raj Kumar</p>
+    <p>If <code>curl</code> says it connected to port 443, has the server seen your HTTP request yet? The easiest way to see the gap is to watch a single request in verbose mode.</p>
+
+    <h2>Run one request</h2>
+    <pre><code>curl -v --http1.1 https://example.com/ -o /dev/null</code></pre>
+    <p><code>-v</code> shows connection details. <code>--http1.1</code> gives us a repeatable example over TCP, and <code>-o /dev/null</code> keeps the response body out of the terminal. The excerpts below come from one run. Your resolved addresses and TLS details may differ.</p>
+
+    <h2>1. Resolve the name and connect</h2>
+    <pre><code>* Host example.com:443 was resolved.
+*   Trying [2606:4700:10::6814:179a]:443...
+* Connected to example.com (2606:4700:10::6814:179a) port 443</code></pre>
+    <p>The name resolved to several addresses, and this run connected over IPv6. The <code>Connected</code> line tells us the TCP connection opened. To see the actual SYN, SYN-ACK, and ACK packets, you’d use a packet capture. TCP gives the application a reliable, ordered stream of bytes. <a href="https://www.rfc-editor.org/rfc/rfc9293">TCP specification</a></p>
+
+    <h2>2. Negotiate TLS</h2>
+    <pre><code>* ALPN: curl offers http/1.1
+* (304) (OUT), TLS handshake, Client hello (1):
+* (304) (IN), TLS handshake, Server hello (2):
+* ALPN: server accepted http/1.1
+* SSL certificate verify ok.</code></pre>
+    <p>The trace reported TLS 1.3. During the handshake, the client and server establish encryption keys. Curl checks that the server certificate is trusted and valid for <code>example.com</code>. ALPN is how they agree to speak HTTP/1.1 over this connection. At this point, we still haven’t reached the <code>GET</code>.</p>
+
+    <h2>3. Send the request and read the response</h2>
+    <pre><code>&gt; GET / HTTP/1.1
+&gt; Host: example.com
+&lt; HTTP/1.1 200 OK</code></pre>
+    <p><code>&gt;</code> marks what curl sent and <code>&lt;</code> marks what it received. Curl displays those lines in readable form because it sits at the client endpoint. On the wire, TLS encrypts the HTTP message.</p>
+
+    <h2>The seven OSI layers, from the request to the wire</h2>
+    <p>The OSI model describes networking as seven layers. Each layer answers a different question, from what the message means to how a signal moves across a link. The curl trace gives us clues about several of those layers. For the rest, we can follow what happens to the bytes after curl hands them to the operating system. <a href="https://www.itu.int/rec/T-REC-X.200-199407-I/en">OSI Basic Reference Model</a></p>
+
+    <h3>7. Application — What does the message mean?</h3>
+    <p>HTTP defines what <code>GET /</code> asks for and what <code>200 OK</code> means. Curl is the program using the protocol. Name resolution happens earlier in the example. DNS is also an application-layer protocol when a DNS lookup is needed, although this trace doesn’t show whether the resolver sent a query or used a cached answer.</p>
+
+    <h3>6. Presentation — How is the data represented?</h3>
+    <p>The receiver needs to know how to interpret the bytes. An HTTP response might declare <code>Content-Type: text/html; charset=utf-8</code>, which tells the client the document format and character encoding. Compression is another example of a transformation that endpoints need to agree on. The OSI model gives data representation its own layer. In Internet software, HTTP metadata and application libraries often handle that work directly.</p>
+
+    <h3>5. Session — How is an ongoing exchange coordinated?</h3>
+    <p>The OSI session layer describes managing a dialogue between endpoints, including whose turn it is to send and where an interrupted exchange can resume if the protocol supports checkpoints. A web application may instead maintain continuity across many HTTP requests with a session cookie. That is a familiar example of session state, implemented at the application level. This curl request has no separate OSI session protocol to point to.</p>
+
+    <h3>4. Transport — Which connection gets these bytes?</h3>
+    <p>TCP connects a local port to port 443 at the remote address. It numbers bytes so the receiver can put them in order and uses acknowledgments and retransmissions to recover from loss. Flow control keeps the sender from overrunning the receiver. The <code>Connected</code> line marks the point where curl has a transport connection it can use for TLS.</p>
+
+    <h3>3. Network — Where is the destination?</h3>
+    <p>IP supplies source and destination addresses. The operating system uses its routing table to select an outgoing interface and next hop. Routers then forward the packet toward its destination. The IPv6 address in curl’s <code>Trying</code> line is the remote destination for this connection.</p>
+
+    <h3>2. Data Link — How does the packet reach the next hop?</h3>
+    <p>On Ethernet, the IP packet rides inside a frame addressed to a device on the local link. For a remote server, that local destination is usually the default gateway. A router removes the incoming link-layer frame and sends the forwarded IP packet in a new frame on the outgoing link. So the first Ethernet frame can be addressed to the gateway’s MAC while the IP packet inside is addressed to the remote server.</p>
+
+    <h3>1. Physical — How do the bits travel?</h3>
+    <p>The hardware sends bits as signals suited to the medium, such as electrical signals on copper, pulses of light in fiber, or radio waves over Wi-Fi. Curl can report that the connection worked. To check a physical link, start with the interface’s link status or radio signal, since curl cannot tell you which medium carried each hop.</p>
+
+    <h2>Encapsulation — What gets wrapped around what?</h2>
+    <p>For an Ethernet hop in this example, the HTTP message is encrypted into TLS records. TCP carries those bytes in segments, IP carries the segments in packets, and Ethernet carries the packets in frames with a header and an error-detection trailer. The physical link transmits the frame as signals. At the receiving endpoint, those steps are reversed so the HTTP server can read the request. One HTTP message can span multiple segments and frames.</p>
+
+    <figure class="packet-diagram">
+      <pre><code>curl ────── home router ────── … ────── server
+     first Ethernet hop
+
+     Ethernet dst: home router’s MAC
+     └─ IP dst: server’s IP address
+        └─ TCP dst: port 443
+           └─ TLS data: encrypted HTTP request</code></pre>
+      <figcaption>On a home Ethernet connection, the first frame goes to the router. The IP packet inside is addressed to the server.</figcaption>
+    </figure>
+
+    <h2>Where OSI maps to TCP/IP</h2>
+    <table>
+      <thead><tr><th scope="col">OSI reference layers</th><th scope="col">TCP/IP equivalent</th></tr></thead>
+      <tbody>
+        <tr><td>7 Application, 6 Presentation, 5 Session</td><td>Application</td></tr>
+        <tr><td>4 Transport</td><td>Transport</td></tr>
+        <tr><td>3 Network</td><td>Internet</td></tr>
+        <tr><td>2 Data Link, 1 Physical</td><td>Link</td></tr>
+      </tbody>
+    </table>
+    <p>The mapping is approximate. For this request, HTTP runs over TLS, TLS uses TCP, and TCP travels over IP. The link layer carries traffic on each local hop. On an Ethernet network, a request to a remote server can have the router’s MAC address as its first-hop destination while the IP packet is still addressed to the remote server. The curl trace shows the IP address. A packet capture can show the local frame. <a href="https://www.rfc-editor.org/rfc/rfc1122">Internet host communication layers</a></p>
+    <p>For debugging, look for the last line that succeeded. <code>Connected</code> gets you through TCP. <code>SSL certificate verify ok.</code> gets you past certificate verification. An HTTP status means you received an HTTP response. If you try HTTP/3, the transport looks different because HTTP/3 uses QUIC over UDP. <a href="https://www.rfc-editor.org/rfc/rfc9114">HTTP/3 specification</a></p>
+  </article>
+</main>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#fafbf8"/>
+<path d="M60 100H1140M60 548H1140" stroke="#dce3db"/>
+<g font-family="Arial,sans-serif" fill="#192e27">
+<text x="60" y="66" font-size="25" font-weight="700" letter-spacing="-1">HARSHA.</text>
+<text x="1140" y="63" text-anchor="end" font-size="14" fill="#56665e">VANDERBILT · M.S. COMPUTER SCIENCE · APRIL 2027</text>
+<text x="60" y="162" font-size="21">Harsha Raj Kumar</text>
+<text x="55" y="267" font-size="88" font-weight="700" letter-spacing="-5">Software</text>
+<text x="55" y="359" font-size="88" font-weight="700" letter-spacing="-5">Engineering.</text>
+<text x="60" y="418" font-size="21" fill="#56665e">Collaborative applications. Reliable systems. Developer tools.</text>
+<rect x="60" y="459" width="296" height="42" rx="4" fill="#245b45"/>
+<text x="80" y="486" font-size="15" fill="white">Two merged PyTorch contributions</text>
+<text x="60" y="590" font-size="18">hashadev.duckdns.org</text>
+<text x="1140" y="590" text-anchor="end" font-size="15" fill="#56665e">SEEKING 2027 SOFTWARE ENGINEERING ROLES</text>
+</g>
+<g fill="none" stroke="#b9cbb5" stroke-width="2"><path d="M990 173V290M990 290H875V380M990 290H1100V380"/><rect x="938" y="137" width="104" height="65" rx="6" fill="#edf0e8"/><rect x="823" y="379" width="104" height="65" rx="6" fill="#edf0e8"/><rect x="1048" y="379" width="104" height="65" rx="6" fill="#edf0e8"/></g>
+<g font-family="monospace" font-size="20" fill="#245b45" text-anchor="middle"><text x="990" y="178">{ }</text><text x="875" y="419">&lt;/&gt;</text><text x="1100" y="419">→</text></g>
+</svg>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A worked example of how Twitter Snowflake combines a timestamp, worker number, and sequence into a 64-bit ID.">
+  <title>Why Twitter Built Snowflake IDs | Harsha Raj Kumar</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <style>
+    body{margin:0;background:#fafbf8;color:#192e27;font:17px/1.7 system-ui,sans-serif}
+    main{max-width:690px;margin:auto;padding:36px 22px 60px}
+    h1,h2,h3{line-height:1.18;letter-spacing:-.035em}
+    h1{font-size:clamp(34px,6vw,55px);margin:.35em 0 .5em}
+    h2{font-size:25px;margin-top:1.65em}
+    h3{font-size:19px;margin:1.35em 0 .35em}
+    h3+p{margin-top:0}
+    a{color:#245b45;text-underline-offset:3px}
+    .category{color:#245b45;font-weight:650;font-size:14px;margin:34px 0 0}
+    .byline{color:#56665e;font-size:15px;margin-bottom:24px}
+    pre{overflow:auto;padding:15px 17px;background:#edf1e7;border:1px solid #dce3db;border-radius:6px;font-size:14px;line-height:1.6}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;vertical-align:top;padding:9px;border-bottom:1px solid #dce3db}
+    .packet-diagram{margin:22px 0 30px}
+    .packet-diagram pre{margin-bottom:8px}
+    .packet-diagram figcaption{font-size:14px;color:#56665e}
+    :focus-visible{outline:3px solid #b66e2d;outline-offset:4px}
+  </style>
+</head>
+<body>
+<main>
+  <a href="../../#writing">← Back to Writing</a>
+  <article>
+    <p class="category">Industry-Grade Systems · Twitter Engineering</p>
+    <h1>Why Twitter Built Snowflake IDs</h1>
+    <p class="byline">Written by Harsha Raj Kumar</p>
+    <p>Imagine two database shards each insert a tweet and assign it ID <code>42</code>. Both inserts succeed. Now a client asks for tweet <code>42</code>. Which one does it mean?</p>
+    <p>This is my take on Twitter’s original Snowflake design. The bit layout left me with a few questions. What happens when the timestamp runs out? Where do the photos and videos go if the ID is only 64 bits? And if one worker gets overloaded, would I use consistent hashing to route requests? Those questions helped me see where the ID generator’s job ends and the rest of the system takes over.</p>
+    <p>In 2010, Twitter described moving many systems toward Cassandra or horizontally sharded MySQL. It needed compact IDs that workers could generate independently and that would sort roughly by creation time. <a href="https://blog.x.com/en/engineering/announcing-snowflake">Twitter’s original announcement</a></p>
+
+    <h2>Three fields make the ID</h2>
+    <p>Snowflake fits a timestamp, a worker identity, and a local sequence into a signed 64-bit integer. In the archived implementation, the worker identity is split into a datacenter number and a worker number. The top bit stays clear within the supported timestamp range.</p>
+    <pre><code> 1 bit     41 bits               5 bits       5 bits    12 bits
+[   0   ][ ms since epoch    ][ datacenter ][ worker ][ sequence ]</code></pre>
+    <p>The timestamp separates different milliseconds. The datacenter and worker fields distinguish generators operating in the same millisecond. The sequence distinguishes requests handled by one generator during that millisecond. The 41-bit timestamp field covers roughly 69.7 years from the chosen epoch. <a href="https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala">Archived worker code</a></p>
+
+    <h2>What if three tweets arrive in one millisecond?</h2>
+    <p>Say both workers are in datacenter 2, and the elapsed time since the epoch is 1000 milliseconds. Worker 7 handles two requests. Worker 8 handles one.</p>
+    <table>
+      <thead><tr><th scope="col">Timestamp</th><th scope="col">Worker</th><th scope="col">Sequence</th><th scope="col">Packed ID</th></tr></thead>
+      <tbody>
+        <tr><td>1000</td><td>7</td><td>0</td><td>4194594816</td></tr>
+        <tr><td>1000</td><td>7</td><td>1</td><td>4194594817</td></tr>
+        <tr><td>1000</td><td>8</td><td>0</td><td>4194598912</td></tr>
+      </tbody>
+    </table>
+    <p>Worker 7 changes the sequence for its second request. Worker 8 can use sequence 0 because its worker field is different. You can reproduce the first number with a few shifts and bitwise ORs. The <code>n</code> suffix makes the values JavaScript BigInts so the same calculation also works for IDs beyond the safe integer range of <code>Number</code>.</p>
+    <pre><code>(1000n &lt;&lt; 22n) | (2n &lt;&lt; 17n) | (7n &lt;&lt; 12n) | 0n
+// 4194594816n</code></pre>
+    <p>The timestamp is the most significant field, so a larger encoded timestamp sorts later. Look at the last two rows, though. If worker 8 handled its request first, its ID still sorts after worker 7’s IDs. Inside the same millisecond, the worker field decides the order. Clock skew can also put IDs from different workers out of creation order.</p>
+
+    <h2>Can the ID itself be the cursor?</h2>
+    <p>If I want a feed ordered by Snowflake ID, I only need the last ID from the previous page. IDs are unique, so there is no tie to break. A timestamp alone can skip rows when a page ends in the middle of a group with the same <code>created_at</code>.</p>
+    <pre><code>SELECT * FROM tweets
+WHERE id &lt; :last_id
+ORDER BY id DESC
+LIMIT 20;</code></pre>
+    <p>This query assumes a feed ordered by ID, which is roughly chronological. PostgreSQL can use a B-tree primary-key index for the range and order. A feed filtered by another field, such as author, may benefit from a composite index that also includes that field. If the cursor crosses a JSON API, I’d send the ID as a string to preserve all its digits in JavaScript clients. <a href="https://www.postgresql.org/docs/current/indexes-ordering.html">PostgreSQL index ordering</a></p>
+
+    <h2>Where the workers still need coordination</h2>
+    <p>Twitter described using ZooKeeper to choose worker numbers at startup, with a configuration override. Once the worker’s identity is assigned, it can generate IDs using its clock and local sequence. Two active generators using the same datacenter and worker pair could generate the same ID if their timestamps and sequences line up. <a href="https://blog.x.com/en/engineering/announcing-snowflake">Twitter’s startup and ordering design</a></p>
+
+    <h2>What happens when the clock misbehaves?</h2>
+    <p>Twelve sequence bits give a worker 4,096 values per millisecond. If those values run out, the archived worker waits for a later millisecond. If the clock reports a time earlier than the last timestamp the worker used, the worker rejects the request. Reusing an earlier timestamp could repeat a sequence value it had already issued. A backward clock correction can make that worker unavailable until its clock catches up. <a href="https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala">Overflow and rollback handling in the archived worker</a></p>
+    <h2>What happens after 69 years?</h2>
+    <p>Existing tweets keep their IDs. The limit is on generating new IDs in the same format. The 41-bit field can represent roughly 69.7 years of milliseconds after the chosen epoch. Using the epoch in Twitter’s archived code, the timestamp reaches the sign bit on July 10, 2080 UTC. The archived code shifts the timestamp into place without an explicit rollover check, so this is the limit of the nonnegative ID range. <a href="https://github.com/twitter-archive/snowflake/blob/snowflake-2010/src/main/scala/com/twitter/service/snowflake/IdWorker.scala">Epoch and field layout in the archived worker</a></p>
+    <ul>
+      <li><strong>Trade worker slots for time.</strong> Giving one bit to the timestamp doubles its range to roughly 139 years and cuts the worker identities from 1,024 to 512. This changes how the bits are decoded, so old and new IDs need a way to coexist.</li>
+      <li><strong>Start a new epoch with a distinct version.</strong> Resetting the timestamp alone can recreate old IDs. A version field or a separate namespace gives the new IDs a distinct interpretation. With a version bit, the design has to budget that bit and preserve compatibility with existing IDs.</li>
+      <li><strong>Move to a wider ID.</strong> UUIDv7 and ULID each use a 48-bit millisecond timestamp in a 128-bit format. That provides a much longer window and means updating storage, indexes, and APIs that currently expect 64-bit IDs. <a href="https://www.rfc-editor.org/rfc/rfc9562#section-5.7">UUIDv7 specification</a> · <a href="https://github.com/ulid/spec">ULID specification</a></li>
+    </ul>
+
+    <h3>Would storing the date separately solve it?</h3>
+    <p>My first thought was that if every tweet already has a <code>created_at</code> column, I can still sort by date after changing the ID format. That works for sorting. The part I missed was that two different timestamps can pack into the same integer when the layout changes.</p>
+    <pre><code>Same epoch, with worker and sequence bits set to zero:
+
+Old layout: (2⁴⁰ milliseconds) &lt;&lt; 22 = 2⁶²
+New layout: (2⁴¹ milliseconds) &lt;&lt; 21 = 2⁶²</code></pre>
+    <p>Even though those records were created decades apart, they have the same numeric ID. If <code>id</code> is the primary key, a different <code>created_at</code> value won’t let the second row use that key.</p>
+    <p>My approach would be to give the new IDs a namespace that cannot overlap with the old one. I’d keep <code>created_at</code> for time-based queries. If the numeric order changes across formats and I still want a chronological feed, I’d sort by <code>created_at DESC, id DESC</code> and carry both values in the cursor. The next page can filter with <code>WHERE (created_at, id) &lt; (:last_created_at, :last_id)</code>, so tweets with the same timestamp still have a stable order. If a client only has an ID and needs to decode its timestamp, the ID or its namespace also needs to tell the client which format to use.</p>
+
+    <h2>Where do the text, photos, and videos go?</h2>
+    <p>The ID identifies the tweet. In a typical design, a tweet record stores its text and references to attached media. An object store can hold the photo or video bytes. For example, a record for tweet <code>142536789012345678</code> might reference an image stored under the object key <code>media/7f3c.jpg</code>. This is an illustrative schema.</p>
+    <p>The same 64-bit ID can identify a short text post or a post with a large video. Its size stays fixed. Fetching and serving the content still depends on the database, the media store, and how much data the client requests.</p>
+
+    <h2>What if one worker gets overloaded?</h2>
+    <p>Suppose worker 7 has used all 4,096 sequence values for the current millisecond. Its next request waits for the clock to advance. Worker 8 has its own sequence and can still issue IDs during that millisecond. If a worker is overloaded for longer, new requests can go to a healthy worker with spare capacity. Round robin is one possible starting point. Routing based on outstanding requests can help when workers handle uneven loads. These are design options for a Snowflake-style service.</p>
+
+    <h2>Would I use consistent hashing here?</h2>
+    <p>I wouldn’t start with it. If I’m looking up a tweet, I may need to reach the shard that owns it. If I’m creating a tweet and need a fresh ID, any healthy generator with a distinct worker identity can issue one. Sending every request for the same user to one generator would give that user an affinity the ID format doesn’t need, and a busy user could concentrate load on one worker.</p>
+    <p>Consistent hashing helps when a storage or cache layer needs stable placement as nodes come and go. Snowflake workers each keep their own timestamp and sequence, but a caller can switch workers because the worker identity is encoded in the result. That’s what makes the requests interchangeable from the caller’s point of view.</p>
+
+    <h2>My takeaway</h2>
+    <p>The useful part of Snowflake is where it puts the coordination. Give each worker a distinct identity up front, then let it allocate IDs using its own clock and counter. That keeps a shared counter out of the request path and lets callers spread load across workers. In exchange, you have to manage worker identities, handle clock rollback, and accept that sorting the IDs gives approximate time order.</p>
+  </article>
+</main>
+</body>
+</html>
